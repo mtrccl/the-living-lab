@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import type {Genome,Species} from './engine';
 export type Discovery={id:string;label:string;tick:number;generation:number;species:Species;genome:Genome;capturedAt:string};
 const KEY='genesis:discoveries:v1';
-function read():Discovery[]{try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string'&&x.genome).slice(0,60):[];}catch{return[];}}
+function read():Discovery[]{try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.filter((x:unknown)=>typeof x==='object'&&x!==null&&typeof (x as Discovery).id==='string'&&(x as Discovery).genome).slice(0,60):[];}catch{return[];}}
 export function Gallery({capture}:{capture:()=>Omit<Discovery,'id'|'capturedAt'>|null}){
  const [items,setItems]=useState<Discovery[]>([]);
  useEffect(()=>setItems(read()),[]);
