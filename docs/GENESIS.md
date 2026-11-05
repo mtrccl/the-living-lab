@@ -16,3 +16,11 @@ Deterministic xorshift32 random stream; browser-only simulation; Canvas renderin
 
 ## Limitations
 Educational toy model, not scientifically validated biology or sentient life. The v1 simulation runs on the main browser thread; a dedicated Web Worker is a future optimization. Snapshot imports receive basic validation only. The chart shows rendered frames, not every tick.
+
+## Genesis 1.1 — Emergence
+
+Three horizontal biomes (fertile, arid, extreme) introduce differing metabolic costs and food growth probabilities. Grazers seek plants; predators pursue living grazers and gain energy on capture. Species is inherited; every child stores its parent's ID. Selecting an organism in the habitat opens its live genome and ancestry information. The discovery gallery stores selected genome records in browser localStorage (up to 60) and supports JSON export and deletion.
+
+### Experimental caution
+
+This is an intentionally simplified predator-prey model. It does not implement biological realism, gene-driven behavior trees, a complete family tree, or validated ecology. The gallery is browser-local and is not uploaded. The first version still runs its simulation on the main thread; performance is limited at high population/speed settings.
