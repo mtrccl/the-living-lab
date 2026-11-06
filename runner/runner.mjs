@@ -27,8 +27,19 @@ try{
   catch(backupError){if(backupError?.code!=='ENOENT')throw backupError;}
   const seed=Number(process.env.GENESIS_SEED??42);
   if(!Number.isSafeInteger(seed)||seed<0||seed>4294967295)throw Error('Invalid Genesis seed');
-  world=new World(seed);
-  console.log('Created new world');
+  let config={};
+  if(process.env.GENESIS_CONFIG){
+   const parsed=JSON.parse(process.env.GENESIS_CONFIG);
+   if(parsed===null||typeof parsed!=='object'||Array.isArray(parsed))throw Error('GENESIS_CONFIG must be an object');
+   const known={foodRate:[0,10],mutation:[0,1],temperature:[0,1],maxPopulation:[1,10000],predatorExtraCost:[0,1],predatorCatchRadius:[1,50],predatorSpeedMultiplier:[0.5,4],predatorInitialEnergy:[40,145],predatorKillGain:[0,200],grazerAlertMultiplier:[0.1,2],predatorMinPreyRatio:[0,100],predatorMetabolismFactor:[0.05,2],predatorBirthEnergy:[60,145]};
+   for(const [key,value] of Object.entries(parsed)){
+    if(!(key in known)||typeof value!=='number'||!Number.isFinite(value)||value<known[key][0]||value>known[key][1])throw Error('Invalid GENESIS_CONFIG field: '+key);
+   }
+   if(parsed.maxPopulation!==undefined&&!Number.isSafeInteger(parsed.maxPopulation))throw Error('maxPopulation must be an integer');
+   config=parsed;
+  }
+  world=new World(seed,config);
+  console.log('Created new world with configured environment');
  }
 }
 await mkdir(dirname(checkpointPath),{recursive:true});
