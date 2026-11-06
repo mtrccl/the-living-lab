@@ -32,3 +32,7 @@ This is an intentionally simplified predator-prey model. It does not implement b
 ## Genesis v1.2 — behavioral selection (first increment)
 
 Grazers now prioritize fleeing the nearest predator inside their inherited vision radius, then seek food. Predators pursue visible grazers. With no visible target, organisms wander. All steering decisions are deterministic for a fixed world state and random seed. This creates a measurable survival trade-off between vision, movement speed, and energy efficiency, but does not by itself establish long-term adaptation. Multi-generation lineage visualization and controlled selection experiments remain future work.
+
+## Persistent genealogy
+
+Each world records founding organisms and offspring with immutable parent identifiers, generation, inherited genome, birth tick and optional death tick. Dead ancestors remain in the world history and JSON snapshot. The observer shows a selected organism's ancestry (up to twelve generations). Legacy snapshots without lineage restore a partial history containing only organisms alive at import time; earlier ancestors cannot be reconstructed. The lineage log grows with births, so long-running persistent worlds will need retention and archival policies before deployment.
