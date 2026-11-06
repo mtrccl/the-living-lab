@@ -1,3 +1,4 @@
+import {chooseSteering} from './behavior';
 export type Genome={speed:number;vision:number;efficiency:number;hue:number};
 export type Species='grazer'|'predator';
 export type Biome='fertile'|'arid'|'extreme';
@@ -18,7 +19,7 @@ export class World{
  mutate(g:Genome):Genome{const m=(v:number,scale:number,a:number,b:number)=>clamp(v+(this.random()*2-1)*scale*this.config.mutation,a,b);return{speed:m(g.speed,1,.2,2.5),vision:m(g.vision,65,10,160),efficiency:m(g.efficiency,1,.2,2),hue:(g.hue+(this.random()*2-1)*80*this.config.mutation+360)%360};}
  step(){this.tick++;const born:Organism[]=[];for(const o of this.organisms){if(o.energy<=0)continue;o.age++;let target:Food|undefined;let best=o.genome.vision**2;if(o.species==='grazer')for(const f of this.food){const d=(o.x-f.x)**2+(o.y-f.y)**2;if(d<best){best=d;target=f;}}
  let prey:Organism|undefined;if(o.species==='predator')for(const p of this.organisms){if(p===o||p.species!=='grazer'||p.energy<=0)continue;const d=(o.x-p.x)**2+(o.y-p.y)**2;if(d<best){best=d;prey=p;}}
- const angle=prey?Math.atan2(prey.y-o.y,prey.x-o.x):target?Math.atan2(target.y-o.y,target.x-o.x):this.random()*Math.PI*2;const speed=o.genome.speed*1.7;o.x=clamp(o.x+Math.cos(angle)*speed,0,WIDTH);o.y=clamp(o.y+Math.sin(angle)*speed,0,HEIGHT);o.energy-=.17+speed*.09/o.genome.efficiency+Math.abs(this.config.temperature-.5)*.27+biomeCost(biomeAt(o.x,o.y))+(o.species==='predator'?.16:0);
+ const steering=chooseSteering(o,this.organisms,this.food,this.random()*Math.PI*2);const speed=o.genome.speed*1.7;o.x=clamp(o.x+steering.x*speed,0,WIDTH);o.y=clamp(o.y+steering.y*speed,0,HEIGHT);o.energy-=.17+speed*.09/o.genome.efficiency+Math.abs(this.config.temperature-.5)*.27+biomeCost(biomeAt(o.x,o.y))+(o.species==='predator'?.16:0);
  if(prey&&prey.energy>0&&(o.x-prey.x)**2+(o.y-prey.y)**2<64){prey.energy=0;o.energy=Math.min(145,o.energy+65);}
  if(target&&(o.x-target.x)**2+(o.y-target.y)**2<49){const i=this.food.indexOf(target);if(i>=0){this.food.splice(i,1);o.energy=Math.min(145,o.energy+32);}}
  if(o.energy>105&&this.organisms.length+born.length<this.config.maxPopulation){o.energy*=.52;const child=this.spawn(clamp(o.x+(this.random()-.5)*16,0,WIDTH),clamp(o.y+(this.random()-.5)*16,0,HEIGHT),this.mutate(o.genome),o.generation+1,o.species,o.id);child.energy=o.energy;born.push(child);this.births++;}}
