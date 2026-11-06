@@ -24,3 +24,7 @@ The runner saves a versioned JSON checkpoint at `./data/world.json` by default. 
 - Production updates need explicit migrations and tested rollback procedures.
 
 No Proxmox configuration changes are included.
+
+## Explicit recovery
+
+If the primary checkpoint is corrupt or missing while a `.bak` exists, startup fails closed. After verifying the backup and preserving a copy of both files, set `GENESIS_RECOVER_BACKUP=1` to restore the backup. The runner then writes a new primary checkpoint and retains the backup. Recovery may lose progress since the last backup; it is never automatic. Temporary checkpoint files are cleaned up after failed writes. Disk-full and multi-day load testing are still outstanding.
