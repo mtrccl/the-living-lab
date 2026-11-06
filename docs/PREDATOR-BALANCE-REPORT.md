@@ -78,3 +78,130 @@ Before launching a replacement Experiment 003:
    public dashboard read-only and label the experiment revision.
 
 **Do not merge the research changes into production unreviewed.**
+
+## Extended research: density, energy, and long-horizon tests (2026-11-06)
+
+**Earlier rejection of pure hunting buffs remains valid.** A structural
+change to predator reproduction — permitting births only when at least a
+specified number of grazers exist per predator — led to the first genuine
+coexistence. Reducing predator basal metabolism further improved it.
+No predator is ever respawned, and extinction remains possible.
+
+### Reproduction density screen (10 seeds × 3,000 ticks)
+
+- Minimum prey-to-predator ratio 3: **0/10** coexist.
+- Ratio 5: **2/10**; ratio 8: **2/10**; ratio 12: **1/10**.
+- With weaker prey alert, adjusted hunting and ratio 5: **8/10**.
+- Ratio 10 with the same weaker prey alert: **5/10**.
+- CI: https://github.com/mtrccl/the-living-lab/actions/runs/42251062810
+
+### Metabolism and birth threshold screen (10 seeds × 3,000 ticks)
+
+With predator birth constrained by prey density, basal metabolism set to
+30–50% of the former value yielded **10/10** coexistence in several
+configurations. These were *screening runs only*, not yet sufficient for
+a production decision.
+
+- CI: https://github.com/mtrccl/the-living-lab/actions/runs/42251873624
+
+### Strict out-of-sample validation
+
+Every listed cohort used distinct seeds that were not used to tune the
+earlier configurations. *Coexistence means both grazers AND predators
+were still alive at the endpoint.*
+
+| Test cohort | Configuration | Coexistent worlds | Endpoint |
+|---|---|---:|---:|
+| 20 previously unseen seeds | metabolism .30, birth threshold 105, prey ratio 5 | 19/20 | 10,000 ticks |
+| Same 20 seeds | metabolism .30, birth threshold 120, prey ratio 5 | 19/20 | 10,000 ticks |
+| 10 further seeds | metabolism .30, birth threshold 105, prey ratio 5 | 7/10 | 20,000 ticks |
+| Same 10 seeds | metabolism .30, birth threshold 120, prey ratio 5 | 8/10 | 20,000 ticks |
+| Same 10 seeds, higher prey protection | metabolism .30, birth threshold 120, prey ratio 7 | **10/10** | 20,000 ticks |
+| Same 10 seeds, higher prey protection | metabolism .30, birth threshold 105, prey ratio 7 | **10/10** | 20,000 ticks |
+| **20 new, held-out seeds** | metabolism .30, birth threshold 120, prey ratio 7 | **20/20** | 20,000 ticks |
+| Same 20 held-out seeds | metabolism .30, birth threshold 105, prey ratio 7 | 18/20 | 20,000 ticks |
+
+Runs:
+- https://github.com/mtrccl/the-living-lab/actions/runs/42252183437
+- https://github.com/mtrccl/the-living-lab/actions/runs/42252552678
+- https://github.com/mtrccl/the-living-lab/actions/runs/42252917031
+- https://github.com/mtrccl/the-living-lab/actions/runs/42253283932
+
+An intermediate 10,000-tick batch returned useful individual logs but
+finished with a Vitest worker RPC timeout on the CI runner:
+https://github.com/mtrccl/the-living-lab/actions/runs/42251372464.
+Later runs yielded periodically to the event loop and passed CI;
+none of the final recommendation depends on interpreting that failed
+workflow as a successful check.
+
+### 30,000-tick soak and food sensitivity
+
+10 completely new seeds per configuration:
+
+| Food-generation rate | Change vs. default | Both species alive at 30,000 | Mean living grazers | Mean living predators |
+|---|---:|---:|---:|---:|
+| **2.5** | baseline | **8/10** | 53.6 | 12.7 |
+| 2.0 | −20% | **4/10** | 39.3 | 4.6 |
+| 3.0 | +20% | **8/10** | 67.8 | 12.2 |
+
+CI: https://github.com/mtrccl/the-living-lab/actions/runs/42253676945
+
+Food scarcity can still result in ecosystem collapse. This is not
+concealed: the tuned model is **not** guaranteed to sustain both species
+indefinitely or under every resource condition.
+
+### Selected candidate for Experiment 003
+
+The **tested** configuration is:
+
+```json
+{
+  "foodRate": 2.5,
+  "mutation": 0.12,
+  "temperature": 0.5,
+  "maxPopulation": 350,
+  "predatorExtraCost": 0.03,
+  "predatorCatchRadius": 14,
+  "predatorSpeedMultiplier": 1.5,
+  "predatorInitialEnergy": 115,
+  "predatorKillGain": 80,
+  "grazerAlertMultiplier": 0.3,
+  "predatorMinPreyRatio": 7,
+  "predatorMetabolismFactor": 0.3,
+  "predatorBirthEnergy": 120
+}
+```
+
+**Reason for selection:** outperforming the original model in both
+short- and long-horizon tests, reproducing coexistence across *all* 20
+held-out 20k-tick runs. Setting birth threshold to 120 yielded 20/20 vs
+18/20 for 105 in the same held-out sample. The default resource
+supply was retained. All parameters remain heuristic artificial-life
+rules; there are no universal biologically correct values.
+
+### Regression and safety
+
+The regression suite verifies that:
+
+- Existing production defaults remain unchanged when no experiment
+  parameters are supplied.
+- Old checkpoints without new parameter keys still restore correctly.
+- Extinct species never spontaneously return.
+- Predators cannot reproduce when there are too few live prey.
+- Birth/death accounting and population cap remain valid.
+- A selected seeded world replays deterministically after checkpoint
+  save and restoration.
+
+No experiment has been reset and no code has been deployed to VM 220.
+The results propose **an Experiment 003 candidate**, not a modification
+to any earlier experiment. A new experiment must be initialized with
+these parameters explicitly, after archiving the preceding world.
+
+### Statistical limitations
+
+A 20/20 result is not evidence of certain survival. Even under the
+default food rate, 2/10 completely new 30k-tick worlds eventually
+lost coexistence. Deterministic seeds permit repeatability but do not
+create independent biological observations or validate real-world
+ecology. Larger seed sets, longer horizons and further food sensitivity
+analysis remain useful if stronger guarantees are desired.
