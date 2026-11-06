@@ -80,6 +80,8 @@ def fetch_state(api=DEFAULT_API):
 
 def store(path, record):
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
+    # The localhost dashboard runs as 'nobody' and requires directory traversal.
+    path.parent.chmod(0o755)
     with sqlite3.connect(path, timeout=15) as db:
         db.execute(SCHEMA)
         keys = tuple(record)
