@@ -21,6 +21,16 @@ MAX_RESPONSE = 16 * 1024 * 1024
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.path == "/api/experiment":
+            marker = Path("/var/lib/genesis-reports/active-experiment.txt")
+            try:
+                current = marker.read_text(encoding="ascii").strip() if marker.exists() else "001"
+                if not current.isdigit() or len(current) != 3:
+                    raise ValueError("Invalid experiment identifier")
+                self.respond(200, json.dumps({"experiment": current}).encode("utf-8"), "application/json")
+            except (OSError, ValueError):
+                self.respond(503, b'{"error":"experiment unavailable"}', "application/json")
+            return
         parsed = urlsplit(self.path)
         if parsed.path in ("/api/history", "/api/events"):
             params = parse_qs(parsed.query, keep_blank_values=True)
