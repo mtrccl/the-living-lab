@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GENESIS — Live Habitat</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#080e14;color:#dbe6ee}
+*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1440px;margin:auto;padding:24px 30px}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #23313e;gap:20px}
+.kicker,.eyebrow{font-size:11px;font-weight:750;letter-spacing:.22em;color:#8babb3}
+h1{font-size:clamp(30px,4vw,53px);letter-spacing:-.055em;margin:5px 0 0;line-height:1}
+h1 span,.accent{color:#7be0b5}.live{color:#9caeba;font-size:12px;display:flex;align-items:center;gap:9px}
+.dot{display:inline-block;width:9px;height:9px;background:#f8af67;border-radius:100%}.dot.ok{background:#7be0b5;box-shadow:0 0 12px #7be0b588}
+main{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:17px}
+.panel{border:1px solid #263542;background:#111c27;border-radius:14px;overflow:hidden;min-width:0}
+.panel-title{padding:16px 19px;border-bottom:1px solid #24313c;color:#99b5c1;letter-spacing:.16em;font-size:11px;font-weight:700;display:flex;justify-content:space-between;gap:12px}
+.stage{position:relative;background:#07121d}.stage canvas{width:100%;height:auto;display:block;cursor:crosshair;aspect-ratio:5/3}
+.legend{padding:15px 19px;display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#b5c5ce}
+.legend b{display:inline-block;height:9px;width:9px;border-radius:50%;margin-right:6px}
+.side{display:flex;flex-direction:column;gap:17px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#233441}
+.metric{background:#111c27;padding:17px 19px;min-height:91px}.metric small{display:block;color:#8ba4b2;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.metric strong{display:block;font-variant-numeric:tabular-nums;font-size:27px;margin-top:7px;font-weight:650}
+.inspect{padding:16px 19px;min-height:120px;color:#b9cbd2;font-size:13px;line-height:1.8}
+.inspect strong{color:#e6f3ee}.inspect-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
+.chart-panel{grid-column:1/-1}.chart-area{padding:16px 18px}.chart-area canvas{width:100%;height:115px;display:block}
+footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
+#error{display:none;background:#4b2834;color:#ffd4db;padding:10px 30px;text-align:center;font-size:13px}
+@media(max-width:850px){main{grid-template-columns:1fr}.chart-panel{grid-column:auto}header,main,footer{padding-left:16px;padding-right:16px}header{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div><div class="kicker">THE LIVING LAB / OBSERVATION 001</div><h1>GENESIS<span>.</span></h1></div><div class="live"><span id="light" class="dot"></span><span id="status">CONNECTING</span> · READ ONLY · <span id="updated">—</span></div></header>
+<div id="error" role="alert"></div>
+<main>
+<section class="panel"><div class="panel-title"><span>01 / LIVE HABITAT</span><span id="clock">TICK —</span></div><div class="stage"><canvas id="habitat" width="900" height="540" aria-label="Live map of organisms and food in the habitat"></canvas></div><div class="legend"><span><b style="background:#76e6b5"></b>GRAZERS</span><span><b style="background:#ff798d"></b>PREDATORS</span><span><b style="background:#d8bd67"></b>FOOD</span><span>SELECT A CREATURE TO INSPECT</span></div></section>
+<div class="side">
+<section class="panel"><div class="panel-title">02 / ECOSYSTEM TELEMETRY</div><div class="metrics">
+<div class="metric"><small>Population</small><strong id="population">—</strong></div>
+<div class="metric"><small>Generation</small><strong id="generation">—</strong></div>
+<div class="metric"><small>Grazers</small><strong id="grazers">—</strong></div>
+<div class="metric"><small>Predators</small><strong id="predators">—</strong></div>
+<div class="metric"><small>Births</small><strong id="births">—</strong></div>
+<div class="metric"><small>Deaths</small><strong id="deaths">—</strong></div>
+<div class="metric"><small>Food</small><strong id="food">—</strong></div>
+<div class="metric"><small>Mean energy</small><strong id="averageEnergy">—</strong></div>
+</div></section>
+<section class="panel"><div class="panel-title">03 / CREATURE OBSERVER</div><div id="inspect" class="inspect">Click any living creature to see its traits and ancestry.</div></section>
+</div>
+<section class="panel chart-panel"><div class="panel-title"><span>04 / POPULATION TREND</span><span>RECENT OBSERVATIONS · NOT HISTORICAL REPLAY</span></div><div class="chart-area"><canvas id="chart" width="1200" height="115" aria-label="Recent observed population chart"></canvas></div></section>
+</main>
+<footer>Independent ecosystem · No pause, reset, mutations or controls exposed · Live data refreshes every 3 seconds</footer>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const habitat=$('habitat'),ctx=habitat.getContext('2d'),chart=$('chart'),chartCtx=chart.getContext('2d');
+let snapshot=null,selected=null,observations=[],busy=false,lastOK=0;
+const width=900,height=540;
+const number=(x,d=0)=>typeof x==='number'&&Number.isFinite(x)?x.toFixed(d):'—';
+const circle=(c,x,y,r)=>{c.beginPath();c.arc(x,y,r,0,Math.PI*2);};
+const color=o=>o.species==='predator'?'#ff798d':'hsl('+number(o.genome?.hue||145)+' 80% 69%)';
+function renderHabitat(){
+ctx.fillStyle='#091722';ctx.fillRect(0,0,width,height);
+const biomes=[['#123c31','FERTILE'],['#48351e','ARID'],['#37283f','EXTREME']];
+for(let i=0;i<3;i++){ctx.fillStyle=biomes[i][0];ctx.globalAlpha=.46;ctx.fillRect(i*300,0,300,height);ctx.globalAlpha=1;ctx.fillStyle='#66818b';ctx.font='10px system-ui';ctx.fillText(biomes[i][1],i*300+15,22);}
+ctx.strokeStyle='#e0eaf008';ctx.lineWidth=1;for(let x=0;x<=width;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke();}for(let y=0;y<=height;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();}
+if(!snapshot)return;
+for(const f of snapshot.food||[]){ctx.fillStyle='#d8bd67';circle(ctx,f.x,f.y,2);ctx.fill();}
+for(const o of snapshot.organisms||[]){
+const x=o.x,y=o.y,pred=o.species==='predator',r=Math.max(4,Math.min(10,4+o.energy/30)),hue=color(o);
+ctx.fillStyle=hue+'28';circle(ctx,x,y,r+6);ctx.fill();
+ctx.fillStyle=hue;ctx.strokeStyle=hue;ctx.lineWidth=1.5;
+if(pred){ctx.beginPath();ctx.moveTo(x,y-r-3);ctx.lineTo(x+r+3,y+r);ctx.lineTo(x-r-3,y+r);ctx.closePath();ctx.fill();}
+else{circle(ctx,x,y,r);ctx.fill();ctx.fillStyle='#0b2025';circle(ctx,x+r*.28,y-r*.18,Math.max(1,r*.2));ctx.fill();}
+if(o.id===selected){ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;circle(ctx,x,y,r+11);ctx.stroke();ctx.fillStyle='#fff';ctx.font='12px system-ui';ctx.fillText('#'+o.id,x+15,y-13);}
+}
+}
+function renderTrend(){
+const c=chartCtx,w=chart.width,h=chart.height;c.clearRect(0,0,w,h);c.strokeStyle='#29404e';c.lineWidth=1;
+for(let i=1;i<4;i++){let y=i*h/4;c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+if(observations.length<2)return;
+const max=Math.max(1,...observations.map(o=>o.n)),min=Math.min(0,...observations.map(o=>o.n));
+c.beginPath();c.strokeStyle='#7be0b5';c.lineWidth=2;
+observations.forEach((o,i)=>{const x=i/(Math.max(observations.length-1,1))*w,y=h-8-(o.n-min)/(max-min||1)*(h-16);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+}
+function renderInspect(){
+const o=snapshot?.organisms?.find(x=>x.id===selected);
+if(!o){$('inspect').textContent=selected===null?'Click any living creature to see its traits and ancestry.':'Selected creature is no longer alive. Click another creature.';return;}
+const g=o.genome||{},fields=[['Species',o.species],['Generation',o.generation],['Parent',o.parentId??'Founder'],['Energy',number(o.energy,1)],['Age',o.age],['Speed',number(g.speed,2)],['Vision',number(g.vision,1)],['Efficiency',number(g.efficiency,2)]];
+$('inspect').replaceChildren();
+const heading=document.createElement('strong');heading.textContent='CREATURE #'+o.id;$('inspect').append(heading);
+const body=document.createElement('div');body.className='inspect-grid';for(const [k,v] of fields){const item=document.createElement('span');item.textContent=k+': '+v;body.append(item);}$('inspect').append(body);
+}
+function renderMetrics(stats,world){
+const s=stats||{};$('clock').textContent='TICK '+number(world.tick);for(const id of ['population','generation','grazers','predators','births','deaths','food','averageEnergy'])$(id).textContent=number(s[id],id==='averageEnergy'?1:0);
+}
+habitat.addEventListener('click',e=>{if(!snapshot)return;const rect=habitat.getBoundingClientRect(),x=(e.clientX-rect.left)*width/rect.width,y=(e.clientY-rect.top)*height/rect.height;let best=225,id=null;for(const o of snapshot.organisms||[]){const d=(o.x-x)**2+(o.y-y)**2;if(d<best){best=d;id=o.id;}}selected=id;renderHabitat();renderInspect();});
+async function refresh(){
+if(busy)return;busy=true;
+try{
+const res=await fetch('/api/state',{cache:'no-store'});if(!res.ok)throw Error('API '+res.status);
+const data=await res.json();if(!data.world||!data.stats||!Array.isArray(data.world.organisms)||!Array.isArray(data.world.food))throw Error('Invalid world state');
+snapshot=data.world;lastOK=Date.now();$('light').classList.add('ok');$('status').textContent='LIVE';$('updated').textContent=new Date().toLocaleTimeString();$('error').style.display='none';
+renderMetrics(data.stats,snapshot);renderHabitat();renderInspect();
+const current={tick:snapshot.tick,n:data.stats.population};if(!observations.length||observations[observations.length-1].tick!==current.tick){observations.push(current);if(observations.length>120)observations.shift();}renderTrend();
+}catch(e){$('light').classList.remove('ok');$('status').textContent='OFFLINE';$('error').textContent='Live state unavailable. The simulation itself is not controlled by this dashboard.';$('error').style.display='block';}
+finally{busy=false;}
+}
+renderHabitat();refresh();setInterval(refresh,3000);
+</script>
+</body></html>
