@@ -6,8 +6,10 @@ import {World} from './engine';
 const SEEDS=[2003,2011,2017,2027,2029,2039,2053,2063,2069,2081];
 const TICKS=20000;
 const CASES=[
- {name:'20K_M03_B105_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
- {name:'20K_M03_B120_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
+ {name:'20K_ratio7_M03_B120',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
+ {name:'20K_ratio9_M03_B120',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:9,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
+ {name:'20K_ratio6_M035_B120',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:6,predatorMetabolismFactor:.35,predatorBirthEnergy:120},
+ {name:'20K_ratio7_M03_B105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
@@ -47,7 +49,7 @@ describe('Offline multi-seed predator survival benchmark',()=>{
      if(extinct===null&&pred===0)extinct=tick;
     }
     const stats=world.stats();
-    outcomes.push({seed,survived:stats.predators>0?1:0,
+    outcomes.push({seed,survived:stats.predators>0&&stats.grazers>0?1:0,
       predators:stats.predators,grazers:stats.grazers,
       firstExtinct:extinct,predatorPeak,grazerPeak,predatorTicks,coexistentAt3000,coexistentAt5000,coexistentAt10000,finalMinPrey});
    }
