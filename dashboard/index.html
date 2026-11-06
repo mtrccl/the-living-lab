@@ -63,9 +63,11 @@ footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 const $=id=>document.getElementById(id);
 const habitat=$('habitat'),ctx=habitat.getContext('2d'),chart=$('chart'),chartCtx=chart.getContext('2d');
 let snapshot=null,selected=null,observations=[],historyPoints=[],range='1h',historySerial=0,lastHistoryFetch=0,busy=false,lastOK=0;
+const PERIODS={'1h':3600000,'1d':86400000,'1w':604800000,'1m':2592000000,'1y':31536000000};
 const chartPoints=()=>historyPoints.length?historyPoints:(range==='1h'?observations:[]);
+const pointX=(p,left,width)=>left+Math.max(0,Math.min(1,(Date.parse(p.timestamp)-(Date.now()-PERIODS[range]))/PERIODS[range]))*width;
 function timeLabel(text){const date=new Date(text);if(!Number.isFinite(+date))return '';return range==='1h'||range==='1d'?date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):date.toLocaleDateString([],{month:'short',day:'numeric'});}
-function axis(c,w,h,points){if(points.length===0)return;c.fillStyle='#7895a5';c.font='11px system-ui';c.textAlign='left';c.fillText(timeLabel(points[0].timestamp),10,h-3);c.textAlign='right';c.fillText(timeLabel(points[points.length-1].timestamp),w-10,h-3);c.textAlign='left';}
+function axis(c,w,h,points){if(points.length===0)return;c.fillStyle='#7895a5';c.font='11px system-ui';c.textAlign='left';c.fillText(timeLabel(new Date(Date.now()-PERIODS[range]).toISOString()),10,h-3);c.textAlign='right';c.fillText(timeLabel(new Date().toISOString()),w-10,h-3);c.textAlign='left';}
 async function refreshHistory(){
  const request=++historySerial;
  try{
@@ -111,7 +113,7 @@ function renderTrend(){
  if(points.length){
  const max=Math.max(1,...points.map(o=>o.population??o.n??0));
  c.beginPath();c.strokeStyle='#7be0b5';c.lineWidth=2;
- points.forEach((o,i)=>{const x=p+(points.length===1?.5:i/(points.length-1))*(w-2*p),y=h-30-((o.population??o.n??0)/max)*(h-45);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+ points.forEach((o,i)=>{const x=pointX(o,p,w-2*p),y=h-30-((o.population??o.n??0)/max)*(h-45);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
  axis(c,w,h,points);
  }
 }
@@ -125,7 +127,7 @@ function plotLines(id,series){
  const max=Math.max(1,...points.flatMap(o=>series.map(s=>o[s.key]||0)));
  for(const line of series){
  c.strokeStyle=line.color;c.lineWidth=2;c.beginPath();
- points.forEach((o,i)=>{const x=p+(points.length===1?.5:i/(points.length-1))*(w-2*p),y=h-26-((o[line.key]||0)/max)*(h-45);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+ points.forEach((o,i)=>{const x=pointX(o,p,w-2*p),y=h-26-((o[line.key]||0)/max)*(h-45);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
  }
  axis(c,w,h,points);
 }
@@ -148,7 +150,7 @@ function renderAdditionalCharts(){
   if(!points.length)return;
   const max=Math.max(1,...points.flatMap(o=>o[field]||[]));
   for(let j=0;j<colors.length;j++){c.beginPath();c.strokeStyle=colors[j];c.lineWidth=2;
-   points.forEach((o,i)=>{const x=p+(points.length===1?.5:i/(points.length-1))*(w-2*p),y=h-29-((o[field]?.[j]||0)/max)*(h-47);
+   points.forEach((o,i)=>{const x=pointX(o,p,w-2*p),y=h-29-((o[field]?.[j]||0)/max)*(h-47);
     if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();}
   axis(c,w,h,points);
  };
