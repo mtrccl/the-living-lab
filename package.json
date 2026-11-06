@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && npm run build:runner",
-    "test": "vitest run",
+    "test": "vitest run src",
     "build:runner": "esbuild src/persistence.ts --bundle --platform=node --format=esm --target=node20 --outfile=runner/world-engine.mjs",
     "start:runner": "node runner/runner.mjs",
     "test:runner": "node --test runner/runner.test.mjs"
