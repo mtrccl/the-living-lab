@@ -28,3 +28,7 @@ This is an intentionally simplified predator-prey model. It does not implement b
 ## Repeatable evolution experiments
 
 `src/experiments.ts` exposes `runExperiment(seed, ticks, config)` and `runBatch(seeds, ticks, config)`. Each seed starts an independent world. The browser offers a five-seed comparison at 300 ticks; the batch API supports 1–500 seeds and up to 100,000 ticks per run. It reports survival rate, mean population, generation, and average trait changes. The engine is deterministic for fixed inputs. Trait changes alone do **not** establish adaptive evolution; proper selection studies require controls, replicates and statistical analysis. Large batches should be run offline rather than on the UI thread.
+
+## Genesis v1.2 — behavioral selection (first increment)
+
+Grazers now prioritize fleeing the nearest predator inside their inherited vision radius, then seek food. Predators pursue visible grazers. With no visible target, organisms wander. All steering decisions are deterministic for a fixed world state and random seed. This creates a measurable survival trade-off between vision, movement speed, and energy efficiency, but does not by itself establish long-term adaptation. Multi-generation lineage visualization and controlled selection experiments remain future work.
