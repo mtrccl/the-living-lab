@@ -64,5 +64,8 @@ guest 'curl -fsS http://127.0.0.1:8095/state' | python3 -c 'import json,sys; pri
 if [[ -f /opt/genesis-reporting/sample.py ]]; then
  python3 /opt/genesis-reporting/sample.py
 fi
+# Marker is written only after the new runner is healthy.
+printf '002\n' > "$REPORTS/active-experiment.txt"
+chmod 644 "$REPORTS/active-experiment.txt"
 systemctl start genesis-sample.timer 2>/dev/null || true
 echo '001 archived; 002 running. VM and LAN bridge settings unchanged.'
