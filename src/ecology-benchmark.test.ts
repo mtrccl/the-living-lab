@@ -3,11 +3,12 @@ import {World} from './engine';
 
 // Deterministic, full-engine simulations; never touches the running VM.
 // Metrics are compared at equal ticks, not equal wall-clock durations.
-const SEEDS=[3001,3011,3019,3023,3037,3041,3049,3061,3067,3079,3083,3089,3109,3119,3121,3137,3163,3167,3181,3187];
-const TICKS=20000;
+const SEEDS=[4001,4003,4007,4013,4019,4021,4027,4049,4051,4057];
+const TICKS=30000;
 const CASES=[
- {name:'HOLDOUT_20K_ratio7_B105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
- {name:'HOLDOUT_20K_ratio7_B120',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
+ {name:'SOAK_30K_food_25',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120,foodRate:2.5},
+ {name:'STRESS_30K_food_20',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120,foodRate:2.0},
+ {name:'STRESS_30K_food_30',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120,foodRate:3.0},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
@@ -30,6 +31,7 @@ describe('Offline multi-seed predator survival benchmark',()=>{
      predatorMinPreyRatio:testCase.predatorMinPreyRatio,
      predatorMetabolismFactor:testCase.predatorMetabolismFactor,
      predatorBirthEnergy:testCase.predatorBirthEnergy,
+     foodRate:testCase.foodRate,
     });
     let extinct:number|null=null,predatorPeak=5,grazerPeak=27,predatorTicks=0,coexistentAt3000=0,coexistentAt5000=0,coexistentAt10000=0,finalMinPrey=Infinity;
     for(let tick=1;tick<=TICKS;tick++){
