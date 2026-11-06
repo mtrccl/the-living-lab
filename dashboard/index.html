@@ -23,7 +23,7 @@ main{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:17px
 .metric strong{display:block;font-variant-numeric:tabular-nums;font-size:27px;margin-top:7px;font-weight:650}
 .inspect{padding:16px 19px;min-height:120px;color:#b9cbd2;font-size:13px;line-height:1.8}
 .inspect strong{color:#e6f3ee}.inspect-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
-.chart-panel{grid-column:1/-1}.chart-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.chart-grid .panel{min-width:0}.chart-legend{font-size:11px;color:#90a6b2;padding:0 18px 14px}.chart-area{padding:16px 18px}.chart-area canvas{width:100%;height:115px;display:block}
+.time-controls{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 4px}.time-controls span{font-size:11px;color:#9eb4bf;letter-spacing:.12em;margin-right:8px}.time-controls button{border:1px solid #314654;border-radius:8px;padding:9px 14px;background:#13222e;color:#b5cad4;font:inherit;font-size:12px;cursor:pointer}.time-controls button[aria-pressed="true"]{color:#071722;background:#7be0b5;border-color:#7be0b5;font-weight:750}.time-controls small{color:#879faa;margin-left:auto}.chart-panel{grid-column:1/-1}.chart-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.chart-grid .panel{min-width:0}.chart-legend{font-size:11px;color:#90a6b2;padding:0 18px 14px}.chart-area{padding:16px 18px}.chart-area canvas{width:100%;height:115px;display:block}
 footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 #error{display:none;background:#4b2834;color:#ffd4db;padding:10px 30px;text-align:center;font-size:13px}
 @media(max-width:850px){main,.chart-grid{grid-template-columns:1fr}.chart-panel{grid-column:auto}header,main,footer{padding-left:16px;padding-right:16px}header{flex-wrap:wrap}}
@@ -48,12 +48,13 @@ footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 </div></section>
 <section class="panel"><div class="panel-title">03 / CREATURE OBSERVER</div><div id="inspect" class="inspect">Click any living creature to see its traits and ancestry.</div></section>
 </div>
-<section class="panel chart-panel"><div class="panel-title"><span>04 / POPULATION TREND</span><span>RECENT OBSERVATIONS · NOT HISTORICAL REPLAY</span></div><div class="chart-area"><canvas id="chart" width="1200" height="115" aria-label="Recent observed population chart"></canvas></div></section>
+<div class="time-controls" id="timeControls"><span>HISTORY RANGE</span><button type="button" data-range="1h" aria-pressed="true">1 HOUR</button><button type="button" data-range="1d" aria-pressed="false">1 DAY</button><button type="button" data-range="1w" aria-pressed="false">1 WEEK</button><button type="button" data-range="1m" aria-pressed="false">1 MONTH</button><button type="button" data-range="1y" aria-pressed="false">1 YEAR</button><small id="historyStatus" role="status">Loading archived observations...</small></div>
+<section class="panel chart-panel"><div class="panel-title"><span>04 / POPULATION TREND</span><span>15-MINUTE ARCHIVED OBSERVATIONS</span></div><div class="chart-area"><canvas id="chart" width="1200" height="115" aria-label="Recent observed population chart"></canvas></div></section>
 <div class="chart-grid">
-<section class="panel"><div class="panel-title"><span>05 / GRAZERS VS PREDATORS</span><span>RECENT OBSERVATIONS</span></div><div class="chart-area"><canvas id="speciesChart" width="600" height="150" aria-label="Grazers and predators over recent observations"></canvas></div><div class="chart-legend"><span style="color:#76e6b5">● GRAZERS</span> &nbsp; <span style="color:#ff798d">● PREDATORS</span></div></section>
-<section class="panel"><div class="panel-title"><span>06 / FOOD VS POPULATION</span><span>RECENT OBSERVATIONS</span></div><div class="chart-area"><canvas id="resourcesChart" width="600" height="150" aria-label="Food and population counts over recent observations"></canvas></div><div class="chart-legend"><span style="color:#d8bd67">● FOOD</span> &nbsp; <span style="color:#7ca6ed">● POPULATION</span> · Shared count scale</div></section>
-<section class="panel"><div class="panel-title"><span>07 / ENERGY DISTRIBUTION</span><span id="energySummary">CURRENTLY LIVING</span></div><div class="chart-area"><canvas id="energyChart" width="600" height="150" aria-label="Energy histogram for living organisms"></canvas></div><div class="chart-legend">0–20 · 20–40 · 40–60 · 60–80 · 80–100 · 100+</div></section>
-<section class="panel"><div class="panel-title"><span>08 / GENERATIONS ALIVE</span><span id="genSummary">CURRENTLY LIVING</span></div><div class="chart-area"><canvas id="generationChart" width="600" height="150" aria-label="Distribution of generations among living organisms"></canvas></div><div class="chart-legend">Bars show generations of organisms alive right now</div></section>
+<section class="panel"><div class="panel-title"><span>05 / GRAZERS VS PREDATORS</span><span>SELECTED TIME RANGE</span></div><div class="chart-area"><canvas id="speciesChart" width="600" height="150" aria-label="Grazers and predators over recent observations"></canvas></div><div class="chart-legend"><span style="color:#76e6b5">● GRAZERS</span> &nbsp; <span style="color:#ff798d">● PREDATORS</span></div></section>
+<section class="panel"><div class="panel-title"><span>06 / FOOD VS POPULATION</span><span>SELECTED TIME RANGE</span></div><div class="chart-area"><canvas id="resourcesChart" width="600" height="150" aria-label="Food and population counts over recent observations"></canvas></div><div class="chart-legend"><span style="color:#d8bd67">● FOOD</span> &nbsp; <span style="color:#7ca6ed">● POPULATION</span> · Shared count scale</div></section>
+<section class="panel"><div class="panel-title"><span>07 / ENERGY DISTRIBUTION</span><span id="energySummary">ENERGY BANDS OVER TIME</span></div><div class="chart-area"><canvas id="energyChart" width="600" height="150" aria-label="Energy histogram for living organisms"></canvas></div><div class="chart-legend">Energy 0–20 · 20–40 · 40–60 · 60–80 · 80–100 · 100+ (six time series)</div></section>
+<section class="panel"><div class="panel-title"><span>08 / GENERATIONS ALIVE</span><span id="genSummary">GENERATION BANDS OVER TIME</span></div><div class="chart-area"><canvas id="generationChart" width="600" height="150" aria-label="Distribution of generations among living organisms"></canvas></div><div class="chart-legend">Generations: founders (0) · early (1–2) · middle (3–5) · later (6+)</div></section>
 </div>
 </main>
 <footer>Independent ecosystem · No pause, reset, mutations or controls exposed · Live data refreshes every 3 seconds</footer>
@@ -61,7 +62,28 @@ footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 'use strict';
 const $=id=>document.getElementById(id);
 const habitat=$('habitat'),ctx=habitat.getContext('2d'),chart=$('chart'),chartCtx=chart.getContext('2d');
-let snapshot=null,selected=null,observations=[],busy=false,lastOK=0;
+let snapshot=null,selected=null,observations=[],historyPoints=[],range='1h',historySerial=0,lastHistoryFetch=0,busy=false,lastOK=0;
+const chartPoints=()=>historyPoints.length?historyPoints:(range==='1h'?observations:[]);
+function timeLabel(text){const date=new Date(text);if(!Number.isFinite(+date))return '';return range==='1h'||range==='1d'?date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):date.toLocaleDateString([],{month:'short',day:'numeric'});}
+function axis(c,w,h,points){if(points.length===0)return;c.fillStyle='#7895a5';c.font='11px system-ui';c.textAlign='left';c.fillText(timeLabel(points[0].timestamp),10,h-3);c.textAlign='right';c.fillText(timeLabel(points[points.length-1].timestamp),w-10,h-3);c.textAlign='left';}
+async function refreshHistory(){
+ const request=++historySerial;
+ try{
+  const res=await fetch('/api/history?range='+encodeURIComponent(range),{cache:'no-store'});
+  if(!res.ok)throw Error('Archive HTTP '+res.status);
+  const result=await res.json();
+  if(request!==historySerial)return;
+  historyPoints=Array.isArray(result.points)?result.points:[];
+  lastHistoryFetch=Date.now();
+  $('historyStatus').textContent=historyPoints.length?result.sample_count+' archived samples · UTC timestamps stored':(range==='1h'?'No archived samples yet · browser preview shown':'No archived samples for this period');
+ }catch(e){if(request!==historySerial)return;historyPoints=[];$('historyStatus').textContent=range==='1h'?'Archive unavailable · browser preview shown':'Archive unavailable';}
+ renderTrend();renderAdditionalCharts();
+}
+$('timeControls').addEventListener('click',e=>{
+ const button=e.target.closest('button[data-range]');if(!button)return;
+ range=button.dataset.range;historyPoints=[];for(const b of $('timeControls').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b===button));
+ renderTrend();renderAdditionalCharts();void refreshHistory();
+});
 const width=900,height=540;
 const number=(x,d=0)=>typeof x==='number'&&Number.isFinite(x)?x.toFixed(d):'—';
 const circle=(c,x,y,r)=>{c.beginPath();c.arc(x,y,r,0,Math.PI*2);};
@@ -83,24 +105,29 @@ if(o.id===selected){ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;circle(ctx,x,y,r
 }
 }
 function renderTrend(){
-const c=chartCtx,w=chart.width,h=chart.height;c.clearRect(0,0,w,h);c.strokeStyle='#29404e';c.lineWidth=1;
-for(let i=1;i<4;i++){let y=i*h/4;c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
-if(observations.length<2)return;
-const max=Math.max(1,...observations.map(o=>o.n)),min=Math.min(0,...observations.map(o=>o.n));
-c.beginPath();c.strokeStyle='#7be0b5';c.lineWidth=2;
-observations.forEach((o,i)=>{const x=i/(Math.max(observations.length-1,1))*w,y=h-8-(o.n-min)/(max-min||1)*(h-16);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+ const points=chartPoints(),c=chartCtx,w=chart.width,h=chart.height,p=16;
+ c.clearRect(0,0,w,h);c.strokeStyle='#29404e';c.lineWidth=1;
+ for(let i=0;i<4;i++){const y=p+i*(h-35)/3;c.beginPath();c.moveTo(p,y);c.lineTo(w-p,y);c.stroke();}
+ if(points.length){
+ const max=Math.max(1,...points.map(o=>o.population??o.n??0));
+ c.beginPath();c.strokeStyle='#7be0b5';c.lineWidth=2;
+ points.forEach((o,i)=>{const x=p+(points.length===1?.5:i/(points.length-1))*(w-2*p),y=h-30-((o.population??o.n??0)/max)*(h-45);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+ axis(c,w,h,points);
+ }
 }
-// Historical plots only contain observations collected while this page is open.
+// Every time-series plot uses the selected archive range, not its own clock.
 function plotLines(id,series){
  const canvas=$(id),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,p=14;
  c.clearRect(0,0,w,h);c.lineWidth=1;c.strokeStyle='#314353';
  for(let i=0;i<4;i++){const y=p+i*(h-2*p)/3;c.beginPath();c.moveTo(p,y);c.lineTo(w-p,y);c.stroke();}
- if(observations.length<2)return;
- const max=Math.max(1,...observations.flatMap(o=>series.map(s=>o[s.key]||0)));
+ const points=chartPoints();
+ if(!points.length)return;
+ const max=Math.max(1,...points.flatMap(o=>series.map(s=>o[s.key]||0)));
  for(const line of series){
  c.strokeStyle=line.color;c.lineWidth=2;c.beginPath();
- observations.forEach((o,i)=>{const x=p+i*(w-2*p)/(observations.length-1),y=h-p-((o[line.key]||0)/max)*(h-2*p);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+ points.forEach((o,i)=>{const x=p+(points.length===1?.5:i/(points.length-1))*(w-2*p),y=h-26-((o[line.key]||0)/max)*(h-45);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
  }
+ axis(c,w,h,points);
 }
 function plotBars(id,buckets,color){
  const canvas=$(id),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,p=22;
@@ -112,18 +139,23 @@ function plotBars(id,buckets,color){
 }
 function renderAdditionalCharts(){
  plotLines('speciesChart',[{key:'grazers',color:'#76e6b5'},{key:'predators',color:'#ff798d'}]);
- plotLines('resourcesChart',[{key:'food',color:'#d8bd67'},{key:'n',color:'#7ca6ed'}]);
- if(!snapshot)return;
- const living=snapshot.organisms||[],energies=[0,0,0,0,0,0];
- for(const o of living){const bucket=Math.max(0,Math.min(5,Math.floor(o.energy/20)));energies[bucket]++;}
- plotBars('energyChart',energies.map((value,i)=>({label:i===5?'100+':String(i*20),value})),'#7be0b5');
- $('energySummary').textContent=living.length+' ORGANISMS';
- const gens=new Map();for(const o of living)gens.set(o.generation,(gens.get(o.generation)||0)+1);
- const ordered=[...gens.entries()].sort((a,b)=>a[0]-b[0]);
- // Limit to twelve groups; the last bucket represents all higher generations.
- const groups=ordered.length<=12?ordered:ordered.slice(0,11).concat([[ordered[11][0],ordered.slice(11).reduce((sum,x)=>sum+x[1],0)]]);
- plotBars('generationChart',groups.map(([label,value],i)=>({label:ordered.length>12&&i===11?label+'+':label,value})),'#e8b66b');
- $('genSummary').textContent=ordered.length+' GENERATIONS REPRESENTED';
+ plotLines('resourcesChart',[{key:'food',color:'#d8bd67'},{key:'population',color:'#7ca6ed'}]);
+ const points=chartPoints();
+ const bands=(id,field,colors)=>{
+  const canvas=$(id),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,p=15;
+  c.clearRect(0,0,w,h);c.strokeStyle='#314353';c.lineWidth=1;
+  for(let i=0;i<4;i++){let y=p+i*(h-40)/3;c.beginPath();c.moveTo(p,y);c.lineTo(w-p,y);c.stroke();}
+  if(!points.length)return;
+  const max=Math.max(1,...points.flatMap(o=>o[field]||[]));
+  for(let j=0;j<colors.length;j++){c.beginPath();c.strokeStyle=colors[j];c.lineWidth=2;
+   points.forEach((o,i)=>{const x=p+(points.length===1?.5:i/(points.length-1))*(w-2*p),y=h-29-((o[field]?.[j]||0)/max)*(h-47);
+    if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();}
+  axis(c,w,h,points);
+ };
+ bands('energyChart','energyBins',['#ff798d','#e8a36f','#d8bd67','#76e6b5','#7ca6ed','#b3a1f5']);
+ bands('generationChart','generationBins',['#9fa9b4','#76e6b5','#d8bd67','#b3a1f5']);
+ $('energySummary').textContent='SIX ENERGY BANDS';
+ $('genSummary').textContent='FOUR GENERATION BANDS';
 }
 function renderInspect(){
 const o=snapshot?.organisms?.find(x=>x.id===selected);
@@ -144,10 +176,13 @@ const res=await fetch('/api/state',{cache:'no-store'});if(!res.ok)throw Error('A
 const data=await res.json();if(!data.world||!data.stats||!Array.isArray(data.world.organisms)||!Array.isArray(data.world.food))throw Error('Invalid world state');
 snapshot=data.world;lastOK=Date.now();$('light').classList.add('ok');$('status').textContent='LIVE';$('updated').textContent=new Date().toLocaleTimeString();$('error').style.display='none';
 renderMetrics(data.stats,snapshot);renderHabitat();renderInspect();
-const current={tick:snapshot.tick,n:data.stats.population,grazers:data.stats.grazers,predators:data.stats.predators,food:data.stats.food};if(!observations.length||observations[observations.length-1].tick!==current.tick){observations.push(current);if(observations.length>120)observations.shift();}renderTrend();renderAdditionalCharts();
+const current={timestamp:new Date().toISOString(),tick:snapshot.tick,population:data.stats.population,grazers:data.stats.grazers,predators:data.stats.predators,food:data.stats.food,energyBins:[0,0,0,0,0,0],generationBins:[0,0,0,0]};
+ for(const o of snapshot.organisms){const energy=Math.max(0,Math.min(5,Math.floor(o.energy/20)));current.energyBins[energy]++;const gen=o.generation;current.generationBins[gen===0?0:gen<=2?1:gen<=5?2:3]++;}
+ if(!observations.length||observations[observations.length-1].tick!==current.tick){observations.push(current);if(observations.length>120)observations.shift();}
+ renderTrend();renderAdditionalCharts();if(Date.now()-lastHistoryFetch>60000)void refreshHistory();
 }catch(e){$('light').classList.remove('ok');$('status').textContent='OFFLINE';$('error').textContent='Live state unavailable. The simulation itself is not controlled by this dashboard.';$('error').style.display='block';}
 finally{busy=false;}
 }
-renderHabitat();refresh();setInterval(refresh,3000);
+renderHabitat();void refreshHistory();refresh();setInterval(refresh,3000);
 </script>
 </body></html>
