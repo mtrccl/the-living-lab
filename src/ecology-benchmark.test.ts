@@ -3,21 +3,17 @@ import {World} from './engine';
 
 // Deterministic, full-engine simulations; never touches the running VM.
 // Metrics are compared at equal ticks, not equal wall-clock durations.
-const SEEDS=[11,23,37,42,83,101,211,307,409,503];
-const TICKS=3000;
+const SEEDS=[1009,1013,1019,1021,1031,1033,1039,1049,1051,1061,1063,1069,1087,1091,1093,1097,1103,1109,1117,1123];
+const TICKS=10000;
 const CASES=[
- {name:'metab_100_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:1,predatorBirthEnergy:105},
- {name:'metab_070_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.7,predatorBirthEnergy:105},
- {name:'metab_050_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.5,predatorBirthEnergy:105},
- {name:'metab_030_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
- {name:'metab_050_threshold115',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.5,predatorBirthEnergy:115},
- {name:'metab_030_threshold120',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
- {name:'metab_070_threshold125',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.7,predatorBirthEnergy:125},
- {name:'metab_040_threshold125_ratio7',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.4,predatorBirthEnergy:125},
+ {name:'M03_B105_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
+ {name:'M05_B115_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.5,predatorBirthEnergy:115},
+ {name:'M03_B120_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
+ {name:'M04_B125_R7',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.4,predatorBirthEnergy:125},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
- it('records comparable outcomes without forcing survival',()=>{
+ it('records comparable outcomes without forcing survival',async()=>{
   const results=[] as Array<Record<string,number|string>>;
   for(const testCase of CASES){
    const outcomes=[] as Array<{
@@ -40,6 +36,7 @@ describe('Offline multi-seed predator survival benchmark',()=>{
     let extinct:number|null=null,predatorPeak=5,grazerPeak=27,predatorTicks=0,coexistentAt3000=0,coexistentAt5000=0,coexistentAt10000=0,finalMinPrey=Infinity;
     for(let tick=1;tick<=TICKS;tick++){
      world.step();
+     if(tick%500===0)await new Promise<void>(resolve=>setTimeout(resolve,0));
      const pred=world.organisms.filter(o=>o.species==='predator').length;
      const graze=world.organisms.length-pred;
      predatorPeak=Math.max(predatorPeak,pred);
