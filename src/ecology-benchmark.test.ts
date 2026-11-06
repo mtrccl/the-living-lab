@@ -6,11 +6,12 @@ import {World} from './engine';
 const SEEDS=[11,23,37,42,83,101,211,307,409,503];
 const TICKS=3000;
 const CASES=[
- {name:'baseline',predatorExtraCost:.16,predatorCatchRadius:8},
- {name:'cost_005',predatorExtraCost:.05,predatorCatchRadius:8},
- {name:'radius_12',predatorExtraCost:.16,predatorCatchRadius:12},
- {name:'cost_005_radius_12',predatorExtraCost:.05,predatorCatchRadius:12},
- {name:'cost_000_radius_14',predatorExtraCost:0,predatorCatchRadius:14},
+ {name:'radius_20_cost_005',predatorExtraCost:.05,predatorCatchRadius:20,predatorSpeedMultiplier:1},
+ {name:'radius_30_cost_005',predatorExtraCost:.05,predatorCatchRadius:30,predatorSpeedMultiplier:1},
+ {name:'radius_40_cost_005',predatorExtraCost:.05,predatorCatchRadius:40,predatorSpeedMultiplier:1},
+ {name:'speed_15_radius_15',predatorExtraCost:.05,predatorCatchRadius:15,predatorSpeedMultiplier:1.5},
+ {name:'speed_15_radius_25',predatorExtraCost:.05,predatorCatchRadius:25,predatorSpeedMultiplier:1.5},
+ {name:'speed_20_radius_20',predatorExtraCost:.05,predatorCatchRadius:20,predatorSpeedMultiplier:2},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
@@ -26,6 +27,7 @@ describe('Offline multi-seed predator survival benchmark',()=>{
     const world=new World(seed,{
      predatorExtraCost:testCase.predatorExtraCost,
      predatorCatchRadius:testCase.predatorCatchRadius,
+     predatorSpeedMultiplier:testCase.predatorSpeedMultiplier,
     });
     let extinct:number|null=null,predatorPeak=5,grazerPeak=27,predatorTicks=0;
     for(let tick=1;tick<=TICKS;tick++){
