@@ -40,3 +40,7 @@ Each world records founding organisms and offspring with immutable parent identi
 ## Selection analysis
 
 The observer summarizes surviving founder lines, extinct lines, total descendants, maximum generational depth, and shifts in mean speed and vision between founding organisms and currently living organisms. This is descriptive telemetry: observed shifts alone cannot prove natural selection or causal benefit. Future controlled experiments should compare multiple replicated worlds under different predator pressures and environmental parameters.
+
+## Paired environmental studies
+
+The `compareEnvironments` API runs the same seeds for control and treatment environments, compares population and survival outcomes, and reports mean paired differences. The UI compares current food supply against a 50% increase (capped at 10). Matched seeds reduce variation from initial conditions, but xorshift random streams diverge when environment-dependent events consume different numbers of random draws. Results describe model behavior and should not be interpreted as biological causality. A study accepts 2–100 seeds, and the run duration is bounded by the experiment runner.
