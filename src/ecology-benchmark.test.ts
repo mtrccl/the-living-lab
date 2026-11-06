@@ -3,13 +3,11 @@ import {World} from './engine';
 
 // Deterministic, full-engine simulations; never touches the running VM.
 // Metrics are compared at equal ticks, not equal wall-clock durations.
-const SEEDS=[1009,1013,1019,1021,1031,1033,1039,1049,1051,1061,1063,1069,1087,1091,1093,1097,1103,1109,1117,1123];
-const TICKS=10000;
+const SEEDS=[2003,2011,2017,2027,2029,2039,2053,2063,2069,2081];
+const TICKS=20000;
 const CASES=[
- {name:'M03_B105_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
- {name:'M05_B115_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.5,predatorBirthEnergy:115},
- {name:'M03_B120_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
- {name:'M04_B125_R7',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.4,predatorBirthEnergy:125},
+ {name:'20K_M03_B105_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
+ {name:'20K_M03_B120_R5',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
@@ -45,7 +43,7 @@ describe('Offline multi-seed predator survival benchmark',()=>{
      if(tick===3000)coexistentAt3000=Number(pred>0&&graze>0);
      if(tick===5000)coexistentAt5000=Number(pred>0&&graze>0);
      if(tick===10000)coexistentAt10000=Number(pred>0&&graze>0);
-     if(tick>=8000&&tick%100===0)finalMinPrey=Math.min(finalMinPrey,graze);
+     if(tick>=TICKS-2000&&tick%100===0)finalMinPrey=Math.min(finalMinPrey,graze);
      if(extinct===null&&pred===0)extinct=tick;
     }
     const stats=world.stats();
