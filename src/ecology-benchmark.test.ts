@@ -6,12 +6,12 @@ import {World} from './engine';
 const SEEDS=[11,23,37,42,83,101,211,307,409,503];
 const TICKS=3000;
 const CASES=[
- {name:'radius_20_cost_005',predatorExtraCost:.05,predatorCatchRadius:20,predatorSpeedMultiplier:1},
- {name:'radius_30_cost_005',predatorExtraCost:.05,predatorCatchRadius:30,predatorSpeedMultiplier:1},
- {name:'radius_40_cost_005',predatorExtraCost:.05,predatorCatchRadius:40,predatorSpeedMultiplier:1},
- {name:'speed_15_radius_15',predatorExtraCost:.05,predatorCatchRadius:15,predatorSpeedMultiplier:1.5},
- {name:'speed_15_radius_25',predatorExtraCost:.05,predatorCatchRadius:25,predatorSpeedMultiplier:1.5},
- {name:'speed_20_radius_20',predatorExtraCost:.05,predatorCatchRadius:20,predatorSpeedMultiplier:2},
+ {name:'long_reserve_only',predatorExtraCost:.05,predatorCatchRadius:12,predatorSpeedMultiplier:1,predatorInitialEnergy:140,predatorKillGain:65,grazerAlertMultiplier:1},
+ {name:'less_alert_06',predatorExtraCost:.05,predatorCatchRadius:12,predatorSpeedMultiplier:1.5,predatorInitialEnergy:90,predatorKillGain:65,grazerAlertMultiplier:.6},
+ {name:'less_alert_03',predatorExtraCost:.05,predatorCatchRadius:12,predatorSpeedMultiplier:1.5,predatorInitialEnergy:90,predatorKillGain:65,grazerAlertMultiplier:.3},
+ {name:'better_hunt_reserve',predatorExtraCost:.05,predatorCatchRadius:16,predatorSpeedMultiplier:1.5,predatorInitialEnergy:130,predatorKillGain:90,grazerAlertMultiplier:.6},
+ {name:'balanced_hunt',predatorExtraCost:.05,predatorCatchRadius:12,predatorSpeedMultiplier:1.3,predatorInitialEnergy:120,predatorKillGain:80,grazerAlertMultiplier:.5},
+ {name:'very_strong_hunt',predatorExtraCost:0,predatorCatchRadius:20,predatorSpeedMultiplier:1.5,predatorInitialEnergy:140,predatorKillGain:100,grazerAlertMultiplier:.3},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
@@ -28,6 +28,9 @@ describe('Offline multi-seed predator survival benchmark',()=>{
      predatorExtraCost:testCase.predatorExtraCost,
      predatorCatchRadius:testCase.predatorCatchRadius,
      predatorSpeedMultiplier:testCase.predatorSpeedMultiplier,
+     predatorInitialEnergy:testCase.predatorInitialEnergy,
+     predatorKillGain:testCase.predatorKillGain,
+     grazerAlertMultiplier:testCase.grazerAlertMultiplier,
     });
     let extinct:number|null=null,predatorPeak=5,grazerPeak=27,predatorTicks=0;
     for(let tick=1;tick<=TICKS;tick++){
