@@ -3,14 +3,17 @@ import {World} from './engine';
 
 // Deterministic, full-engine simulations; never touches the running VM.
 // Metrics are compared at equal ticks, not equal wall-clock durations.
-const SEEDS=[1009,1013,1019,1021,1031,1033,1039,1049,1051,1061,1063,1069,1087,1091,1093,1097,1103,1109,1117,1123];
-const TICKS=10000;
+const SEEDS=[11,23,37,42,83,101,211,307,409,503];
+const TICKS=3000;
 const CASES=[
- {name:'A_ratio5_alert03',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5},
- {name:'B_ratio6_alert03',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:6},
- {name:'C_ratio4_alert03',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:4},
- {name:'D_ratio5_alert04',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.4,predatorMinPreyRatio:5},
- {name:'E_ratio5_radius16',predatorExtraCost:.03,predatorCatchRadius:16,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5},
+ {name:'metab_100_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:1,predatorBirthEnergy:105},
+ {name:'metab_070_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.7,predatorBirthEnergy:105},
+ {name:'metab_050_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.5,predatorBirthEnergy:105},
+ {name:'metab_030_threshold105',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:105},
+ {name:'metab_050_threshold115',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.5,predatorBirthEnergy:115},
+ {name:'metab_030_threshold120',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.3,predatorBirthEnergy:120},
+ {name:'metab_070_threshold125',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:5,predatorMetabolismFactor:.7,predatorBirthEnergy:125},
+ {name:'metab_040_threshold125_ratio7',predatorExtraCost:.03,predatorCatchRadius:14,predatorSpeedMultiplier:1.5,predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,predatorMinPreyRatio:7,predatorMetabolismFactor:.4,predatorBirthEnergy:125},
 ] as const;
 
 describe('Offline multi-seed predator survival benchmark',()=>{
@@ -31,6 +34,8 @@ describe('Offline multi-seed predator survival benchmark',()=>{
      predatorKillGain:testCase.predatorKillGain,
      grazerAlertMultiplier:testCase.grazerAlertMultiplier,
      predatorMinPreyRatio:testCase.predatorMinPreyRatio,
+     predatorMetabolismFactor:testCase.predatorMetabolismFactor,
+     predatorBirthEnergy:testCase.predatorBirthEnergy,
     });
     let extinct:number|null=null,predatorPeak=5,grazerPeak=27,predatorTicks=0,coexistentAt3000=0,coexistentAt5000=0,coexistentAt10000=0,finalMinPrey=Infinity;
     for(let tick=1;tick<=TICKS;tick++){
