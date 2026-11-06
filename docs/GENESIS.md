@@ -36,3 +36,7 @@ Grazers now prioritize fleeing the nearest predator inside their inherited visio
 ## Persistent genealogy
 
 Each world records founding organisms and offspring with immutable parent identifiers, generation, inherited genome, birth tick and optional death tick. Dead ancestors remain in the world history and JSON snapshot. The observer shows a selected organism's ancestry (up to twelve generations). Legacy snapshots without lineage restore a partial history containing only organisms alive at import time; earlier ancestors cannot be reconstructed. The lineage log grows with births, so long-running persistent worlds will need retention and archival policies before deployment.
+
+## Selection analysis
+
+The observer summarizes surviving founder lines, extinct lines, total descendants, maximum generational depth, and shifts in mean speed and vision between founding organisms and currently living organisms. This is descriptive telemetry: observed shifts alone cannot prove natural selection or causal benefit. Future controlled experiments should compare multiple replicated worlds under different predator pressures and environmental parameters.
