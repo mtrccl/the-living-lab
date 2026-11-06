@@ -10,6 +10,12 @@ guest() { "${SSH[@]}" "$@"; }
 
 [[ "$(id -u)" == 0 ]] || { echo 'Must run as root' >&2; exit 1; }
 [[ -s "$KEY" && ! -e "$ARCHIVE/world.json" ]] || { echo 'Missing key or archive already exists' >&2; exit 1; }
+# Refuse any transition that cannot archive from the first 002 sample.
+[[ -f /opt/genesis-reporting/sample.py ]] ||
+ { echo '15-minute collector is missing; aborting BEFORE stopping 001' >&2; exit 1; }
+python3 -m py_compile /opt/genesis-reporting/sample.py
+systemctl is-enabled --quiet genesis-sample.timer ||
+ { echo 'Sampling timer not configured; aborting BEFORE stopping 001' >&2; exit 1; }
 guest 'test "$(hostname)" = genesis && sudo -n systemctl is-active --quiet genesis'
 if guest 'sudo systemctl cat genesis' | grep -q 'GENESIS_CHECKPOINT=.*experiment-002'; then
  echo 'World 002 already configured; refusing duplicate transition' >&2; exit 1
@@ -61,9 +67,7 @@ EOF
 guest 'sudo systemctl daemon-reload && sudo systemctl start genesis'
 guest 'sudo systemctl is-active --quiet genesis'
 guest 'curl -fsS http://127.0.0.1:8095/state' | python3 -c 'import json,sys; print("Experiment 002:",json.load(sys.stdin)["stats"])'
-if [[ -f /opt/genesis-reporting/sample.py ]]; then
- python3 /opt/genesis-reporting/sample.py
-fi
+python3 /opt/genesis-reporting/sample.py
 # Marker is written only after the new runner is healthy.
 printf '002\n' > "$REPORTS/active-experiment.txt"
 chmod 644 "$REPORTS/active-experiment.txt"
