@@ -7,8 +7,8 @@ import {World,createCheckpoint,restoreCheckpoint} from './world-engine.mjs';
 const checkpointPath=resolve(process.env.GENESIS_CHECKPOINT??'./data/world.json');
 const port=Number(process.env.GENESIS_PORT??8095);
 const tickMs=Number(process.env.GENESIS_TICK_MS??100);
-const saveMs=Number(process.env.GENESIS_SAVE_MS??60000);
-if(!Number.isSafeInteger(port)||port<1||port>65535||!Number.isSafeInteger(tickMs)||tickMs<20||tickMs>60000||!Number.isSafeInteger(saveMs)||saveMs<1000||saveMs>3600000)throw Error('Invalid runner configuration');
+const saveMs=Number(process.env.GENESIS_SAVE_MS??86400000);
+if(!Number.isSafeInteger(port)||port<1||port>65535||!Number.isSafeInteger(tickMs)||tickMs<20||tickMs>60000||!Number.isSafeInteger(saveMs)||saveMs<1000||saveMs>86400000)throw Error('Invalid runner configuration');
 const maxBytes=16*1024*1024;
 const recovery=process.env.GENESIS_RECOVER_BACKUP==='1';
 async function load(path){const metadata=await stat(path);if(metadata.size>maxBytes)throw Error('Checkpoint exceeds size limit');return restoreCheckpoint(JSON.parse(await readFile(path,'utf8')));}
