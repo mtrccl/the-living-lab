@@ -29,7 +29,7 @@ export class World{
  snapshot(){return JSON.parse(JSON.stringify({seed:this.seed,rng:this.rng,tick:this.tick,nextId:this.nextId,births:this.births,deaths:this.deaths,organisms:this.organisms,food:this.food,config:this.config}));}
  static restore(s:ReturnType<World['snapshot']>):World{if(!s||typeof s!=='object'||!Array.isArray(s.organisms)||!Array.isArray(s.food)||s.organisms.length>10000||s.food.length>10000||!s.config||typeof s.config!=='object')throw Error('Invalid snapshot');
  const finite=(n:unknown)=>typeof n==='number'&&Number.isFinite(n);
- const integer=(n:unknown)=>finite(n)&&Number.isInteger(n)&&n>=0;
+ const integer=(n:unknown):n is number=>typeof n==='number'&&Number.isSafeInteger(n)&&n>=0;
  if(!integer(s.seed)||!integer(s.rng)||!integer(s.tick)||!integer(s.nextId)||!integer(s.births)||!integer(s.deaths)||s.seed>4294967295||s.rng>4294967295||s.nextId<1)throw Error('Invalid snapshot counters');
  for(const k of ['foodRate','mutation','temperature','maxPopulation'])if(!finite(s.config[k]))throw Error('Invalid environment');
  if(s.config.foodRate<0||s.config.foodRate>10||s.config.mutation<0||s.config.mutation>1||s.config.temperature<0||s.config.temperature>1||s.config.maxPopulation<1||s.config.maxPopulation>10000)throw Error('Invalid environment bounds');
