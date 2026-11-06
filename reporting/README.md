@@ -43,3 +43,61 @@ genesis-report.timer:
     WantedBy=timers.target
 
 These reports are **local only** until a restricted GitHub publisher to a separate data branch is designed and approved. No GitHub secrets belong in the isolated VM. Nothing in this PR is automatically installed on Proxmox.
+
+## 15-minute samples for the historical charts
+
+The optional collector `reporting/sample.py` creates a compact local SQLite archive.
+One observation per quarter-hour UTC includes the full population totals, grazer/predator
+counts, food, mean energy, six energy bands and four generation bands. It never stores
+a complete world snapshot or modifies the simulation. The historical dashboard
+(PR #10) reads this database read-only, and all five charts offer 1 hour, 1 day,
+1 week, 1 month, and 1 year. Periods with no samples remain empty; history does
+not magically predate installation. Longer ranges are aggregated for readability.
+
+Test:
+
+    python3 -m unittest reporting.test_sample
+
+After review, copy `reporting/sample.py` to
+`/opt/genesis-reporting/sample.py` on the Proxmox host.
+With the existing `genesis-link.service` healthy, run once:
+
+    python3 /opt/genesis-reporting/sample.py
+    ls -lh /var/lib/genesis-reports/history.sqlite3
+
+Then create these **host-side** systemd units (not inside VM 220).
+
+`/etc/systemd/system/genesis-sample.service`:
+
+    [Unit]
+    Description=Genesis 15-minute read-only observation
+    After=genesis-link.service
+    Wants=genesis-link.service
+
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/bin/python3 /opt/genesis-reporting/sample.py
+
+`/etc/systemd/system/genesis-sample.timer`:
+
+    [Unit]
+    Description=Sample Genesis every 15 minutes
+
+    [Timer]
+    OnCalendar=*-*-* *:00,15,30,45:00
+    Persistent=true
+    Unit=genesis-sample.service
+
+    [Install]
+    WantedBy=timers.target
+
+Activate only after successful manual testing:
+
+    systemctl daemon-reload
+    systemctl enable --now genesis-sample.timer
+    systemctl list-timers genesis-sample.timer
+
+The timer records **actual** observations; a missed interval is not reconstructed
+from fabricated values. Keep the Proxmox-host archive outside of the VM.
+The separate daily Markdown/JSON-to-GitHub publisher is still a future change;
+no GitHub credentials are required for sampling.
