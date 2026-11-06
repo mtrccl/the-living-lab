@@ -120,7 +120,11 @@ async function refreshExperiment(){
   if(!res.ok)throw Error('status');
   const obj=await res.json();
   if(!/^[0-9]{3}$/.test(obj.experiment))throw Error('format');
-  activeExperiment=obj.experiment;
+  if(activeExperiment!==obj.experiment){
+    activeExperiment=obj.experiment;
+    observations=[];historyPoints=[];selected=null;
+    renderTrend();renderAdditionalCharts();void refreshHistory();void refreshEvents();
+  }
   updateExperimentLabels();
  }catch(e){/* Keep the last known experiment label. */}
 }
@@ -270,6 +274,7 @@ if(busy)return;busy=true;
 try{
 const res=await fetch('/api/state',{cache:'no-store'});if(!res.ok)throw Error('API '+res.status);
 const data=await res.json();if(!data.world||!data.stats||!Array.isArray(data.world.organisms)||!Array.isArray(data.world.food))throw Error('Invalid world state');
+if(snapshot && data.world.tick<snapshot.tick){observations=[];historyPoints=[];selected=null;void refreshHistory();}
 snapshot=data.world;lastOK=Date.now();$('light').classList.add('ok');$('status').textContent=tr("m67");$('updated').textContent=new Date().toLocaleTimeString();$('error').style.display='none';
 renderMetrics(data.stats,snapshot);renderHabitat();renderInspect();
 const current={timestamp:new Date().toISOString(),tick:snapshot.tick,population:data.stats.population,grazers:data.stats.grazers,predators:data.stats.predators,food:data.stats.food,energyBins:[0,0,0,0,0,0],generationBins:[0,0,0,0]};
