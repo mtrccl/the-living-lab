@@ -62,6 +62,7 @@ test('runner saves and resumes the same ecosystem; corrupt checkpoints fail clos
   assert.equal(resumed.world.seed,saved.world.seed);
   assert.ok(resumed.world.lineage.length>=saved.world.lineage.length);
   await stop(child);child=undefined;
+  await copyFile(path,path+'.bak');
   await writeFile(path,'{bad json');
   const failed=spawn(process.execPath,['runner/runner.mjs'],{
    env:{...process.env,GENESIS_CHECKPOINT:path,GENESIS_PORT:String(port)},
@@ -73,6 +74,19 @@ test('runner saves and resumes the same ecosystem; corrupt checkpoints fail clos
   ]);
   assert.notEqual(code,0);
   assert.equal(await readFile(path,'utf8'),'{bad json');
+  const recovered=spawn(process.execPath,['runner/runner.mjs'],{
+   env:{...process.env,GENESIS_CHECKPOINT:path,GENESIS_PORT:String(port),GENESIS_RECOVER_BACKUP:'1',GENESIS_TICK_MS:'20'},stdio:'ignore'
+  });
+  let healthy=false;
+  for(let i=0;i<100;i++){
+   try{const r=await fetch('http://127.0.0.1:'+port+'/health');if(r.ok){healthy=true;break;}}catch{}
+   await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.ok(healthy,'explicit backup recovery starts');
+  await stop(recovered);
+  const restored=JSON.parse(await readFile(path,'utf8'));
+  assert.equal(restored.world.seed,saved.world.seed);
+  assert.ok(restored.world.tick>=saved.world.tick);
  }finally{
   if(child&&child.exitCode===null)child.kill('SIGKILL');
   await rm(dir,{recursive:true,force:true});
