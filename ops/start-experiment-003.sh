@@ -45,7 +45,7 @@ tar -C "$HOST_STAGE" -cf - runner.mjs behavior.ts engine.ts persistence.ts build
  guest 'sudo tar -xf - -C /opt/genesis/experiment-003-staging'
 guest 'sudo /opt/genesis/bin/node /opt/genesis/experiment-003-staging/build-003.mjs /opt/genesis/experiment-003-staging'
 # Archive transfer inherits restrictive host umask; grant read-only access to staged code.
-guest 'sudo chmod 644 /opt/genesis/experiment-003-staging/{runner,behavior,engine,persistence,world-engine}.mjs'
+guest 'sudo chmod 644 /opt/genesis/experiment-003-staging/*.mjs'
 guest 'for file in runner.mjs behavior.mjs engine.mjs persistence.mjs world-engine.mjs; do /opt/genesis/bin/node --check /opt/genesis/experiment-003-staging/$file || exit; done'
 guest '/opt/genesis/bin/node --input-type=module -e "import(\"/opt/genesis/experiment-003-staging/persistence.mjs\").then(({World,createCheckpoint,restoreCheckpoint})=>{let w=new World(303,{predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120});w.advance(100);let b=restoreCheckpoint(createCheckpoint(w));if(b.tick!==100||b.config.predatorMinPreyRatio!==7)process.exit(1);console.log(\"Staged engine validated\")})"' ||
  fail "Staged engine failed smoke test"
