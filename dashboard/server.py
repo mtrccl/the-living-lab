@@ -7,6 +7,9 @@ This viewer exposes only the static dashboard and the two GET endpoints,
 and binds to localhost (access via an explicit SSH tunnel).
 """
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlsplit
+import json
+from history import get_history
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -18,6 +21,23 @@ MAX_RESPONSE = 16 * 1024 * 1024
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        parsed = urlsplit(self.path)
+        if parsed.path == "/api/history":
+            params = parse_qs(parsed.query, keep_blank_values=True)
+            if set(params) != {"range"} or len(params["range"]) != 1:
+                self.respond(400, b'{"error":"invalid range"}', "application/json")
+                return
+            try:
+                history = get_history(params["range"][0])
+                payload = json.dumps(history, separators=(",", ":"), allow_nan=False).encode("utf-8")
+            except ValueError:
+                self.respond(400, b'{"error":"invalid range or archive"}', "application/json")
+                return
+            except OSError:
+                self.respond(503, b'{"error":"history unavailable"}', "application/json")
+                return
+            self.respond(200, payload, "application/json")
+            return
         if self.path in ("/", "/index.html"):
             try:
                 payload = DASHBOARD.read_bytes()
