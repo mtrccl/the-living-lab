@@ -117,6 +117,33 @@ const chartPoints=()=>historyPoints.length?historyPoints:(range==='1h'?observati
 const pointX=(p,left,width)=>left+Math.max(0,Math.min(1,(Date.parse(p.timestamp)-(Date.now()-PERIODS[range]))/PERIODS[range]))*width;
 function timeLabel(text){const date=new Date(text);if(!Number.isFinite(+date))return '';return range==='1h'||range==='1d'?date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):date.toLocaleDateString([],{month:'short',day:'numeric'});}
 function axis(c,w,h,points){if(points.length===0)return;c.fillStyle='#7895a5';c.font='11px system-ui';c.textAlign='left';c.fillText(timeLabel(new Date(Date.now()-PERIODS[range]).toISOString()),10,h-3);c.textAlign='right';c.fillText(timeLabel(new Date().toISOString()),w-10,h-3);c.textAlign='left';}
+const EVENT_LABELS={
+pl:{predator_extinction:'Wyginęły drapieżniki',population_extinction:'Wyginęła populacja',population_drop:'Gwałtowny spadek populacji',population_recovery:'Odbudowa populacji',new_generation:'Nowy rekord pokolenia',food_scarcity:'Niedobór pożywienia'},
+de:{predator_extinction:'Raubtiere ausgestorben',population_extinction:'Population ausgestorben',population_drop:'Starker Populationsrückgang',population_recovery:'Population erholt sich',new_generation:'Neue Rekordgeneration',food_scarcity:'Nahrungsknappheit'},
+en:{predator_extinction:'Predators became extinct',population_extinction:'Population extinction',population_drop:'Sharp population decline',population_recovery:'Population recovery',new_generation:'New generation record',food_scarcity:'Food shortage'}
+};
+async function refreshEvents(){
+ const requested=range;const target=$('events');const count=$('eventsCount');
+ try{
+  const response=await fetch('/api/events?range='+encodeURIComponent(requested),{cache:'no-store'});
+  if(!response.ok)throw Error('Archive unavailable');
+  const payload=await response.json();if(range!==requested)return;
+  const events=Array.isArray(payload.events)?payload.events.slice(-20).reverse():[];
+  count.textContent=String(events.length);
+  target.replaceChildren();
+  if(!events.length){const p=document.createElement('p');p.textContent=({pl:'Brak zarejestrowanych zdarzeń w tym okresie.',de:'Keine aufgezeichneten Ereignisse in diesem Zeitraum.',en:'No archived events for this period.'}[locale]);target.append(p);return;}
+  for(const event of events){
+    const row=document.createElement('article');row.className='event-row';
+    const time=document.createElement('time');time.textContent=new Date(event.timestamp).toLocaleString(locale);time.dateTime=event.timestamp;
+    const label=document.createElement('strong');label.textContent=(EVENT_LABELS[locale]||EVENT_LABELS.en)[event.code]||event.code;
+    row.append(time,label);
+    target.append(row);
+  }
+ }catch(error){
+   if(range!==requested)return;count.textContent='';
+   target.replaceChildren();const p=document.createElement('p');p.textContent=({pl:'Dziennik zdarzeń niedostępny.',de:'Ereignistagebuch nicht verfügbar.',en:'Event journal unavailable.'}[locale]);target.append(p);
+ }
+}
 async function refreshHistory(){
  const request=++historySerial;
  try{
@@ -133,7 +160,7 @@ async function refreshHistory(){
 $('timeControls').addEventListener('click',e=>{
  const button=e.target.closest('button[data-range]');if(!button)return;
  range=button.dataset.range;historyPoints=[];for(const b of $('timeControls').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b===button));
- renderTrend();renderAdditionalCharts();void refreshHistory();
+ renderTrend();renderAdditionalCharts();void refreshHistory();void refreshEvents();
 });
 const width=900,height=540;
 const number=(x,d=0)=>typeof x==='number'&&Number.isFinite(x)?x.toFixed(d):'—';
@@ -234,6 +261,6 @@ const current={timestamp:new Date().toISOString(),tick:snapshot.tick,population:
 }catch(e){$('light').classList.remove('ok');$('status').textContent=tr("m68");$('error').textContent=tr("m85");$('error').style.display='block';}
 finally{busy=false;}
 }
-translate();renderHabitat();void refreshHistory();refresh();setInterval(refresh,3000);
+translate();renderHabitat();void refreshHistory();void refreshEvents();refresh();setInterval(refresh,3000);
 </script>
 </body></html>
