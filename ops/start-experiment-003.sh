@@ -44,6 +44,8 @@ guest 'sudo install -d -m 755 /opt/genesis/experiment-003-staging'
 tar -C "$HOST_STAGE" -cf - runner.mjs behavior.ts engine.ts persistence.ts build-003.mjs |
  guest 'sudo tar -xf - -C /opt/genesis/experiment-003-staging'
 guest 'sudo /opt/genesis/bin/node /opt/genesis/experiment-003-staging/build-003.mjs /opt/genesis/experiment-003-staging'
+# Archive transfer inherits restrictive host umask; grant read-only access to staged code.
+guest 'sudo chmod 644 /opt/genesis/experiment-003-staging/{runner,behavior,engine,persistence,world-engine}.mjs'
 guest 'for file in runner.mjs behavior.mjs engine.mjs persistence.mjs world-engine.mjs; do /opt/genesis/bin/node --check /opt/genesis/experiment-003-staging/$file || exit; done'
 guest '/opt/genesis/bin/node --input-type=module -e "import(\"/opt/genesis/experiment-003-staging/persistence.mjs\").then(({World,createCheckpoint,restoreCheckpoint})=>{let w=new World(303,{predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120});w.advance(100);let b=restoreCheckpoint(createCheckpoint(w));if(b.tick!==100||b.config.predatorMinPreyRatio!==7)process.exit(1);console.log(\"Staged engine validated\")})"' ||
  fail "Staged engine failed smoke test"
@@ -95,9 +97,10 @@ echo "Checkpoint verified. Activating new engine and world..."
 guest 'sudo install -d -m 750 -o genesis -g genesis /var/lib/genesis/experiment-003'
 guest 'sudo test ! -e /var/lib/genesis/experiment-003/world.json' ||
  fail "003 checkpoint already exists; aborting"
-guest 'sudo cp -a /opt/genesis/experiment-003-staging/runner.mjs /opt/genesis/runner/runner.mjs'
+# Use install rather than cp -a: do NOT carry restrictive staging permissions into the live service.
+guest 'sudo install -m 644 /opt/genesis/experiment-003-staging/runner.mjs /opt/genesis/runner/runner.mjs'
 for file in behavior.mjs engine.mjs persistence.mjs world-engine.mjs; do
- guest "sudo cp -a /opt/genesis/experiment-003-staging/$file /opt/genesis/runner/$file"
+ guest "sudo install -m 644 /opt/genesis/experiment-003-staging/$file /opt/genesis/runner/$file"
 done
 
 guest 'sudo mkdir -p /etc/systemd/system/genesis.service.d /etc/genesis'
