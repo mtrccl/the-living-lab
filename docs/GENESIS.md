@@ -24,3 +24,7 @@ Three horizontal biomes (fertile, arid, extreme) introduce differing metabolic c
 ### Experimental caution
 
 This is an intentionally simplified predator-prey model. It does not implement biological realism, gene-driven behavior trees, a complete family tree, or validated ecology. The gallery is browser-local and is not uploaded. The first version still runs its simulation on the main thread; performance is limited at high population/speed settings.
+
+## Repeatable evolution experiments
+
+`src/experiments.ts` exposes `runExperiment(seed, ticks, config)` and `runBatch(seeds, ticks, config)`. Each seed starts an independent world. The browser offers a five-seed comparison at 300 ticks; the batch API supports 1–500 seeds and up to 100,000 ticks per run. It reports survival rate, mean population, generation, and average trait changes. The engine is deterministic for fixed inputs. Trait changes alone do **not** establish adaptive evolution; proper selection studies require controls, replicates and statistical analysis. Large batches should be run offline rather than on the UI thread.
