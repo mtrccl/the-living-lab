@@ -16,3 +16,15 @@ Deterministic xorshift32 random stream; browser-only simulation; Canvas renderin
 
 ## Limitations
 Educational toy model, not scientifically validated biology or sentient life. The v1 simulation runs on the main browser thread; a dedicated Web Worker is a future optimization. Snapshot imports receive basic validation only. The chart shows rendered frames, not every tick.
+
+## Genesis 1.1 — Emergence
+
+Three horizontal biomes (fertile, arid, extreme) introduce differing metabolic costs and food growth probabilities. Grazers seek plants; predators pursue living grazers and gain energy on capture. Species is inherited; every child stores its parent's ID. Selecting an organism in the habitat opens its live genome and ancestry information. The discovery gallery stores selected genome records in browser localStorage (up to 60) and supports JSON export and deletion.
+
+### Experimental caution
+
+This is an intentionally simplified predator-prey model. It does not implement biological realism, gene-driven behavior trees, a complete family tree, or validated ecology. The gallery is browser-local and is not uploaded. The first version still runs its simulation on the main thread; performance is limited at high population/speed settings.
+
+## Repeatable evolution experiments
+
+`src/experiments.ts` exposes `runExperiment(seed, ticks, config)` and `runBatch(seeds, ticks, config)`. Each seed starts an independent world. The browser offers a five-seed comparison at 300 ticks; the batch API supports 1–500 seeds and up to 100,000 ticks per run. It reports survival rate, mean population, generation, and average trait changes. The engine is deterministic for fixed inputs. Trait changes alone do **not** establish adaptive evolution; proper selection studies require controls, replicates and statistical analysis. Large batches should be run offline rather than on the UI thread.
