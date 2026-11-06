@@ -24,9 +24,17 @@ main{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:17px
 .inspect{padding:16px 19px;min-height:120px;color:#b9cbd2;font-size:13px;line-height:1.8}
 .inspect strong{color:#e6f3ee}.inspect-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
 .time-controls{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 4px}.time-controls span{font-size:11px;color:#9eb4bf;letter-spacing:.12em;margin-right:8px}.time-controls button{border:1px solid #314654;border-radius:8px;padding:9px 14px;background:#13222e;color:#b5cad4;font:inherit;font-size:12px;cursor:pointer}.time-controls button[aria-pressed="true"]{color:#071722;background:#7be0b5;border-color:#7be0b5;font-weight:750}.time-controls small{color:#879faa;margin-left:auto}.chart-panel{grid-column:1/-1}.chart-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.chart-grid .panel{min-width:0}.chart-legend{font-size:11px;color:#90a6b2;padding:0 18px 14px}.chart-area{padding:16px 18px}.chart-area canvas{width:100%;height:115px;display:block}
+.intro{grid-column:1/-1;padding:29px 31px 27px;background:radial-gradient(ellipse at 88% 0%,#1c3d3b 0%,#13222c 36%,#111c27 70%);border:1px solid #304d4f;border-radius:14px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr);gap:30px;align-items:center}
+.intro h2{font-size:clamp(23px,3vw,36px);letter-spacing:-.045em;line-height:1.12;margin:11px 0 13px;max-width:620px}
+.intro p{color:#b0c6d0;line-height:1.7;font-size:14px;max-width:670px;margin:0}
+.intro-note{border-left:2px solid #6ed6b0;padding-left:19px;font-size:13px;color:#a8c0c8;line-height:1.7}
+.intro-note strong{display:block;color:#bdf3d8;font-size:12px;letter-spacing:.13em;margin-bottom:7px}
+.guide{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.guide article{padding:23px 23px 21px}.guide h3{font-size:16px;letter-spacing:-.02em;margin:13px 0 10px;color:#dbeee8}.guide p{color:#a7bcc7;font-size:13px;line-height:1.7;margin:0}.guide .num{font-size:11px;letter-spacing:.16em;color:#7be0b5}
+.details{grid-column:1/-1}.details summary{cursor:pointer;list-style:none;padding:19px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;letter-spacing:.14em;font-size:12px;color:#bcd5dc;font-weight:750}.details summary::-webkit-details-marker{display:none}.details summary:after{content:'+';font-size:22px;line-height:1;color:#7be0b5}.details[open] summary:after{content:'−'}
+.details-body{padding:4px 25px 25px;color:#adc3cd;font-size:13px;line-height:1.75}.details-body h3{color:#e0efec;font-size:14px;margin:19px 0 5px}.details-body p{margin:4px 0 10px}.details-body a{color:#91e7c6}
 footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 #error{display:none;background:#4b2834;color:#ffd4db;padding:10px 30px;text-align:center;font-size:13px}
-@media(max-width:850px){main,.chart-grid{grid-template-columns:1fr}.chart-panel{grid-column:auto}header,main,footer{padding-left:16px;padding-right:16px}header{flex-wrap:wrap}}
+@media(max-width:850px){main,.chart-grid,.intro,.guide{grid-template-columns:1fr}.chart-panel{grid-column:auto}header,main,footer{padding-left:16px;padding-right:16px}header{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 </head>
@@ -34,6 +42,10 @@ footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 <header><div><div class="kicker">THE LIVING LAB / OBSERVATION 001</div><h1>GENESIS<span>.</span></h1></div><div class="live"><span id="light" class="dot"></span><span id="status">CONNECTING</span> · READ ONLY · <span id="updated">—</span></div></header>
 <div id="error" role="alert"></div>
 <main>
+<section class="intro" aria-labelledby="intro-title">
+<div><div class="eyebrow">EXPERIMENT 001 / DIGITAL ECOLOGY</div><h2 id="intro-title">A world that keeps living<br>when nobody is watching.</h2><p>Genesis is a small autonomous artificial ecosystem. Digital creatures move through three habitats, search for food, spend energy, hunt, reproduce and pass their traits to the next generation. No one chooses who survives. You are watching the consequences of a few simple rules unfold over time.</p></div>
+<div class="intro-note"><strong>YOU ARE AN OBSERVER</strong>This page reads a running simulation. Opening it does not create a new world. Closing it does not stop the creatures. Observation never pauses, resets or changes their environment.</div>
+</section>
 <section class="panel"><div class="panel-title"><span>01 / LIVE HABITAT</span><span id="clock">TICK —</span></div><div class="stage"><canvas id="habitat" width="900" height="540" aria-label="Live map of organisms and food in the habitat"></canvas></div><div class="legend"><span><b style="background:#76e6b5"></b>GRAZERS</span><span><b style="background:#ff798d"></b>PREDATORS</span><span><b style="background:#d8bd67"></b>FOOD</span><span>SELECT A CREATURE TO INSPECT</span></div></section>
 <div class="side">
 <section class="panel"><div class="panel-title">02 / ECOSYSTEM TELEMETRY</div><div class="metrics">
@@ -48,6 +60,11 @@ footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 </div></section>
 <section class="panel"><div class="panel-title">03 / CREATURE OBSERVER</div><div id="inspect" class="inspect">Click any living creature to see its traits and ancestry.</div></section>
 </div>
+<section class="guide" aria-label="How to explore Genesis">
+<article class="panel"><div class="num">01 / OBSERVE</div><h3>Watch the habitat</h3><p>Colored circles are grazers. Triangles are predators. Small golden dots represent food. Each region has different living conditions.</p></article>
+<article class="panel"><div class="num">02 / MEET A CREATURE</div><h3>Click an organism</h3><p>Inspect its age, energy, generation, parent and inherited traits. Its story is a snapshot of one life, not a command you can issue.</p></article>
+<article class="panel"><div class="num">03 / FOLLOW CHANGE</div><h3>Read the time charts</h3><p>Explore population, species, resources, energy and generations from one hour to a year. Recorded observations arrive every 15 minutes; gaps are not guessed.</p></article>
+</section>
 <div class="time-controls" id="timeControls"><span>HISTORY RANGE</span><button type="button" data-range="1h" aria-pressed="true">1 HOUR</button><button type="button" data-range="1d" aria-pressed="false">1 DAY</button><button type="button" data-range="1w" aria-pressed="false">1 WEEK</button><button type="button" data-range="1m" aria-pressed="false">1 MONTH</button><button type="button" data-range="1y" aria-pressed="false">1 YEAR</button><small id="historyStatus" role="status">Loading archived observations...</small></div>
 <section class="panel chart-panel"><div class="panel-title"><span>04 / POPULATION TREND</span><span>15-MINUTE ARCHIVED OBSERVATIONS</span></div><div class="chart-area"><canvas id="chart" width="1200" height="115" aria-label="Recent observed population chart"></canvas></div></section>
 <div class="chart-grid">
@@ -56,6 +73,19 @@ footer{font-size:12px;color:#708896;padding-top:3px;padding-bottom:30px}
 <section class="panel"><div class="panel-title"><span>07 / ENERGY DISTRIBUTION</span><span id="energySummary">ENERGY BANDS OVER TIME</span></div><div class="chart-area"><canvas id="energyChart" width="600" height="150" aria-label="Energy histogram for living organisms"></canvas></div><div class="chart-legend">Energy 0–20 · 20–40 · 40–60 · 60–80 · 80–100 · 100+ (six time series)</div></section>
 <section class="panel"><div class="panel-title"><span>08 / GENERATIONS ALIVE</span><span id="genSummary">GENERATION BANDS OVER TIME</span></div><div class="chart-area"><canvas id="generationChart" width="600" height="150" aria-label="Distribution of generations among living organisms"></canvas></div><div class="chart-legend">Generations: founders (0) · early (1–2) · middle (3–5) · later (6+)</div></section>
 </div>
+<details class="panel details" id="about"><summary>09 / ABOUT THE EXPERIMENT &amp; DATA</summary>
+<div class="details-body">
+<h3>What is Genesis?</h3>
+<p>A rule-based model of artificial life, not a video game driven by a player. Organisms have finite energy, inherited movement speed, vision and metabolic efficiency. Food availability, predators and the costs of different regions affect the population. Offspring can inherit slightly mutated traits.</p>
+<h3>What are we measuring?</h3>
+<p>The number of living grazers and predators, total births and deaths, available food, maximum living generation and the mean energy of living organisms. Mean energy is measured in model units, not percent. The creature observer displays the traits of a selected living organism.</p>
+<h3>How do history and time ranges work?</h3>
+<p>The dashboard receives live state about every three seconds. A separate host-side observer can record 15-minute samples for longer-term charts. Hour, day, week, month and year controls choose the same historical range for all charts. Long periods group real samples; before archiving starts, historical observations do not exist. Browser-only previews in the first hour are temporary, not a permanent archive.</p>
+<h3>Scientific limitations</h3>
+<p>These are simulated organisms, not sentient beings. Environmental selection and measured correlations inside this simplified model do not establish biological evolution in the real world or prove causation. No external species are modeled. This page provides read-only access and cannot change the simulation.</p>
+<h3>Project</h3>
+<p><a href="https://github.com/mtrccl/the-living-lab" target="_blank" rel="noopener noreferrer">Source code and technical documentation</a>. Experiment design and telemetry are documented in the repository. Public hosting and external access controls are configured separately.</p>
+</div></details>
 </main>
 <footer>Independent ecosystem · No pause, reset, mutations or controls exposed · Live data refreshes every 3 seconds</footer>
 <script>
