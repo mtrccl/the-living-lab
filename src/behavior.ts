@@ -2,10 +2,10 @@ import type {Organism,Food} from './engine';
 export type Steering={x:number;y:number;mode:'flee'|'forage'|'hunt'|'wander'};
 const distance2=(a:{x:number;y:number},b:{x:number;y:number})=>(a.x-b.x)**2+(a.y-b.y)**2;
 /** Deterministic priority: imminent threat, visible food/prey, then caller-supplied wandering. */
-export function chooseSteering(o:Organism,organisms:readonly Organism[],food:readonly Food[],wanderAngle:number):Steering{
+export function chooseSteering(o:Organism,organisms:readonly Organism[],food:readonly Food[],wanderAngle:number,grazerAlertMultiplier=1):Steering{
  const radius2=o.genome.vision**2;
  if(o.species==='grazer'){
-  let threat:Organism|undefined,nearest=radius2;
+  let threat:Organism|undefined,nearest=radius2*grazerAlertMultiplier**2;
   for(const other of organisms){
    if(other.species!=='predator'||other.energy<=0)continue;
    const d=distance2(o,other);
