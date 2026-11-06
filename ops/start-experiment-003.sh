@@ -24,37 +24,26 @@ systemctl is-enabled --quiet genesis-sample.timer || fail "15-minute sampling ti
 
 # Downloads and TEST COMPILATION happen while old world continues to live.
 mkdir -p "$HOST_STAGE"
-for file in runner/runner.mjs src/behavior.ts src/engine.ts src/persistence.ts; do
+for file in runner/runner.mjs src/behavior.ts src/engine.ts src/persistence.ts ops/build-003.mjs; do
  curl -fLsS "$BASE/$file" -o "$HOST_STAGE/${file##*/}"
 done
 python3 - "$HOST_STAGE" <<'PY'
 from pathlib import Path
 import sys
 p=Path(sys.argv[1])
-for file in ["runner.mjs","behavior.ts","engine.ts","persistence.ts"]:
+for file in ["runner.mjs","behavior.ts","engine.ts","persistence.ts","build-003.mjs"]:
     assert (p/file).stat().st_size>100, file
 assert 'predatorMetabolismFactor' in (p/'engine.ts').read_text()
 assert 'GENESIS_CONFIG' in (p/'runner.mjs').read_text()
 print("Source download validated")
 PY
 
-guest '/opt/genesis/bin/node -e "const m=require(\x27node:module\x27); if(typeof m.stripTypeScriptTypes!==\x27function\x27) process.exit(1)"' ||
+guest "/opt/genesis/bin/node -e 'if(typeof require(\"node:module\").stripTypeScriptTypes!==\"function\")process.exit(1)'" ||
  fail "Guest Node cannot strip TypeScript; 002 is untouched"
 guest 'sudo install -d -m 755 /opt/genesis/experiment-003-staging'
-tar -C "$HOST_STAGE" -cf - runner.mjs behavior.ts engine.ts persistence.ts |
+tar -C "$HOST_STAGE" -cf - runner.mjs behavior.ts engine.ts persistence.ts build-003.mjs |
  guest 'sudo tar -xf - -C /opt/genesis/experiment-003-staging'
-guest "sudo /opt/genesis/bin/node --input-type=module -e '
-import {readFileSync,writeFileSync} from \"node:fs\";
-import {stripTypeScriptTypes} from \"node:module\";
-const d=\"/opt/genesis/experiment-003-staging/\";
-for(const name of [\"behavior\",\"engine\",\"persistence\"]){
- let source=readFileSync(d+name+\".ts\",\"utf8\");
- source=source.replaceAll(\"from '\''./behavior'\''\",\"from '\''./behavior.mjs'\''\").replaceAll(\"from '\''./engine'\''\",\"from '\''./engine.mjs'\''\");
- const compiled=stripTypeScriptTypes(source,{mode:\"strip\"});
- writeFileSync(d+name+\".mjs\",compiled);
-}
-writeFileSync(d+\"world-engine.mjs\",\"export {World,createCheckpoint,restoreCheckpoint} from '\''./persistence.mjs'\'';\\n\");
-'"
+guest 'sudo /opt/genesis/bin/node /opt/genesis/experiment-003-staging/build-003.mjs /opt/genesis/experiment-003-staging'
 guest 'for file in runner.mjs behavior.mjs engine.mjs persistence.mjs world-engine.mjs; do /opt/genesis/bin/node --check /opt/genesis/experiment-003-staging/$file || exit; done'
 guest '/opt/genesis/bin/node --input-type=module -e "import(\"/opt/genesis/experiment-003-staging/persistence.mjs\").then(({World,createCheckpoint,restoreCheckpoint})=>{let w=new World(303,{predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120});w.advance(100);let b=restoreCheckpoint(createCheckpoint(w));if(b.tick!==100||b.config.predatorMinPreyRatio!==7)process.exit(1);console.log(\"Staged engine validated\")})"' ||
  fail "Staged engine failed smoke test"
