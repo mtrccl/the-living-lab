@@ -9,9 +9,11 @@ const common={
 };
 const SEEDS=[303,83,42,11,37,101,211,409];
 const CASES=[
- {name:'003_control',preyRefugeWidth:0},
- {name:'refuge_160',preyRefugeWidth:160},
- {name:'refuge_280',preyRefugeWidth:280}
+ {name:'control_003',preyRefugeWidth:0,predatorCatchChance:1},
+ {name:'chance_08',preyRefugeWidth:0,predatorCatchChance:.8},
+ {name:'chance_06',preyRefugeWidth:0,predatorCatchChance:.6},
+ {name:'chance_04',preyRefugeWidth:0,predatorCatchChance:.4},
+ {name:'refuge160_chance08',preyRefugeWidth:160,predatorCatchChance:.8},
 ] as const;
 const HORIZON=40000;
 
@@ -20,7 +22,7 @@ describe('004 ecological structural screening: spatial refuge',()=>{
   for(const c of CASES){
    const outcomes=[];
    for(const seed of SEEDS){
-    const w=new World(seed,{...common,preyRefugeWidth:c.preyRefugeWidth});
+    const w=new World(seed,{...common,preyRefugeWidth:c.preyRefugeWidth,predatorCatchChance:c.predatorCatchChance});
     let firstGrazerExtinction:number|null=null,firstPredatorExtinction:number|null=null;
     let coexistAt20000=0,coexistAt40000=0,minGrazersLastQuarter=Infinity,maxPredators=0;
     for(let t=1;t<=HORIZON;t++){
@@ -41,7 +43,7 @@ describe('004 ecological structural screening: spatial refuge',()=>{
     expect(w.stats().population).toBe(32+w.births-w.deaths);
    }
    console.log('ECOLOGY_004_SCREEN '+JSON.stringify({
-    case:c.name,refugeWidth:c.preyRefugeWidth,
+    case:c.name,refugeWidth:c.preyRefugeWidth,catchChance:c.predatorCatchChance,
     horizon:HORIZON,seeds:SEEDS.length,
     coexistAt20000:outcomes.reduce((a,b)=>a+b.coexistAt20000,0),
     coexistAt40000:outcomes.reduce((a,b)=>a+b.coexistAt40000,0),
