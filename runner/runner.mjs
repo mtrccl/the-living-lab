@@ -31,7 +31,7 @@ try{
   if(process.env.GENESIS_CONFIG){
    const parsed=JSON.parse(process.env.GENESIS_CONFIG);
    if(parsed===null||typeof parsed!=='object'||Array.isArray(parsed))throw Error('GENESIS_CONFIG must be an object');
-   const known={foodRate:[0,10],mutation:[0,1],temperature:[0,1],maxPopulation:[1,10000],predatorExtraCost:[0,1],predatorCatchRadius:[1,50],predatorSpeedMultiplier:[0.5,4],predatorInitialEnergy:[40,145],predatorKillGain:[0,200],grazerAlertMultiplier:[0.1,2],predatorMinPreyRatio:[0,100],predatorMetabolismFactor:[0.05,2],predatorBirthEnergy:[60,145],preyRefugeWidth:[0,450],predatorCatchChance:[0,1]};
+   const known={foodRate:[0,10],mutation:[0,1],temperature:[0,1],maxPopulation:[1,10000],predatorExtraCost:[0,1],predatorCatchRadius:[1,50],predatorSpeedMultiplier:[0.5,4],predatorInitialEnergy:[40,145],predatorKillGain:[0,200],grazerAlertMultiplier:[0.1,2],predatorMinPreyRatio:[0,100],predatorMetabolismFactor:[0.05,2],predatorBirthEnergy:[60,145],preyRefugeWidth:[0,450],predatorCatchChance:[0,1],predatorScarcityThreshold:[0,500]};
    for(const [key,value] of Object.entries(parsed)){
     if(!(key in known)||typeof value!=='number'||!Number.isFinite(value)||value<known[key][0]||value>known[key][1])throw Error('Invalid GENESIS_CONFIG field: '+key);
    }
