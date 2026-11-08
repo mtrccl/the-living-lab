@@ -7,14 +7,13 @@ const common={
  predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,
  predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120
 };
-const SEEDS=[303,83,42,11,37,101,211,409];
+const SEEDS=[404,401,503,607,709,811,907,1009,1019,1103];
 const CASES=[
- {name:'scarcity_50',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:50},
- {name:'scarcity_75',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:75},
- {name:'scarcity_100',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:100},
- {name:'scarcity_75_catch08',preyRefugeWidth:0,predatorCatchChance:.8,predatorScarcityThreshold:75},
+ {name:'004_scarcity_50',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:50},
+ {name:'004_scarcity_100',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:100},
+ {name:'004_scarcity_75_catch08',preyRefugeWidth:0,predatorCatchChance:.8,predatorScarcityThreshold:75},
 ] as const;
-const HORIZON=40000;
+const HORIZON=100000;
 
 describe('004 ecological structural screening: spatial refuge',()=>{
  it('compares 003 baseline against two prey refuges on identical seeds',async()=>{
