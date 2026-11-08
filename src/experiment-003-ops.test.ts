@@ -8,6 +8,9 @@ describe('Experiment 003 deployment preparation',()=>{
  it('has valid Bash syntax',()=>{
   expect(()=>execFileSync('bash',['-n','ops/start-experiment-003.sh'])).not.toThrow();
  });
+ it('validates Experiment 004 startup shell syntax',()=>{
+  expect(()=>execFileSync('bash',['-n','ops/start-experiment-004.sh'])).not.toThrow();
+ });
  it('validates closing script syntax',()=>{
   expect(()=>execFileSync('bash',['-n','ops/close-experiment-003.sh'])).not.toThrow();
  });
