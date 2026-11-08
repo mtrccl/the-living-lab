@@ -54,9 +54,9 @@ guest 'sudo chmod 644 /opt/genesis/experiment-004-staging/*.mjs'
 guest 'for f in runner.mjs behavior.mjs engine.mjs persistence.mjs world-engine.mjs; do /opt/genesis/bin/node --check /opt/genesis/experiment-004-staging/$f || exit; done'
 guest '/opt/genesis/bin/node --input-type=module -e "
 import {World,createCheckpoint,restoreCheckpoint} from \"/opt/genesis/experiment-004-staging/persistence.mjs\";
-const w=new World(404,{predatorCatchChance:0.6,preyRefugeWidth:0});
+const w=new World(404,{predatorCatchChance:1,predatorScarcityThreshold:100,preyRefugeWidth:0});
 w.advance(100);
-if(w.config.predatorCatchChance!==0.6||JSON.stringify(restoreCheckpoint(createCheckpoint(w)).snapshot())!==JSON.stringify(w.snapshot()))process.exit(1);
+if(w.config.predatorCatchChance!==1||w.config.predatorScarcityThreshold!==100||JSON.stringify(restoreCheckpoint(createCheckpoint(w)).snapshot())!==JSON.stringify(w.snapshot()))process.exit(1);
 console.log(\"004 staged engine OK\");
 "'
 echo "PRECHECK OK — activating 004; never rerun script after this point."
@@ -70,7 +70,7 @@ guest 'sudo install -d -m 755 /etc/genesis /etc/systemd/system/genesis.service.d
 guest 'sudo tee /etc/genesis/experiment-004.env >/dev/null' <<'EOF'
 GENESIS_CHECKPOINT=/var/lib/genesis/experiment-004/world.json
 GENESIS_SEED=404
-GENESIS_CONFIG='{"foodRate":2.5,"mutation":0.12,"temperature":0.5,"maxPopulation":350,"predatorExtraCost":0.03,"predatorCatchRadius":14,"predatorSpeedMultiplier":1.5,"predatorInitialEnergy":115,"predatorKillGain":80,"grazerAlertMultiplier":0.3,"predatorMinPreyRatio":7,"predatorMetabolismFactor":0.3,"predatorBirthEnergy":120,"preyRefugeWidth":0,"predatorCatchChance":0.6}'
+GENESIS_CONFIG='{"foodRate":2.5,"mutation":0.12,"temperature":0.5,"maxPopulation":350,"predatorExtraCost":0.03,"predatorCatchRadius":14,"predatorSpeedMultiplier":1.5,"predatorInitialEnergy":115,"predatorKillGain":80,"grazerAlertMultiplier":0.3,"predatorMinPreyRatio":7,"predatorMetabolismFactor":0.3,"predatorBirthEnergy":120,"preyRefugeWidth":0,"predatorCatchChance":1,"predatorScarcityThreshold":100}'
 EOF
 guest 'sudo chmod 600 /etc/genesis/experiment-004.env'
 guest 'sudo tee /etc/systemd/system/genesis.service.d/experiment-004.conf >/dev/null' <<'EOF'
@@ -86,7 +86,7 @@ guest 'sudo systemctl is-active --quiet genesis'
 guest 'curl -fsS http://127.0.0.1:8095/state' | python3 -c '
 import json,sys
 d=json.load(sys.stdin);w=d["world"];c=w["config"]
-assert w["seed"]==404 and w["tick"]<200 and c["predatorCatchChance"]==0.6 and c["preyRefugeWidth"]==0
+assert w["seed"]==404 and w["tick"]<200 and c["predatorCatchChance"]==1 and c["predatorScarcityThreshold"]==100 and c["preyRefugeWidth"]==0
 assert d["stats"]["predators"]>0 and d["stats"]["grazers"]>0
 print("004 STARTED:",d["stats"])
 '
