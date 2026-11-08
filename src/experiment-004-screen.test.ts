@@ -15,8 +15,11 @@ const CASES=[
 ] as const;
 const HORIZON=60000;
 
-describe('004 ecological structural screening: spatial refuge',()=>{
- it('compares 003 baseline against two prey refuges on identical seeds',async()=>{
+// The 60k-tick stress suite is intentionally opt-in for routine CI speed.
+// Re-run: GENESIS_STRESS_TEST=1 npx vitest run src/experiment-004-screen.test.ts
+const stressTest=process.env.GENESIS_STRESS_TEST==='1'?it:it.skip;
+describe('004 ecological long-run food sensitivity',()=>{
+ stressTest('tests selected model under altered food supply',async()=>{
   for(const c of CASES){
    const outcomes=[];
    for(const seed of SEEDS){
