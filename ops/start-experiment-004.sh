@@ -8,7 +8,7 @@ A=/root/genesis-experiments/experiment-003
 STAGE=/root/genesis-exp004-stage
 DB=/var/lib/genesis-reports/history.sqlite3
 MARK=/var/lib/genesis-reports/active-experiment.txt
-BASE=https://raw.githubusercontent.com/mtrccl/the-living-lab/research/experiment-004-root-cause
+BASE=https://raw.githubusercontent.com/mtrccl/the-living-lab/main
 SSH=(ssh -i "$KEY" -o BatchMode=yes -o ConnectTimeout=8 genesis@10.220.0.2)
 guest() { "${SSH[@]}" "$@"; }
 fail() { echo "ERROR: $*" >&2; exit 1; }
