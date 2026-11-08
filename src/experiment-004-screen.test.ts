@@ -7,19 +7,21 @@ const common={
  predatorInitialEnergy:115,predatorKillGain:80,grazerAlertMultiplier:.3,
  predatorMinPreyRatio:7,predatorMetabolismFactor:.3,predatorBirthEnergy:120
 };
-const SEEDS=[401,503,607,709,811,907,1009,1019,1103,1201,1301,1409];
+const SEEDS=[303,83,42,11,37,101,211,409];
 const CASES=[
- {name:'004_candidate_chance06',preyRefugeWidth:0,predatorCatchChance:.6},
- {name:'004_candidate_chance04',preyRefugeWidth:0,predatorCatchChance:.4},
+ {name:'scarcity_50',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:50},
+ {name:'scarcity_75',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:75},
+ {name:'scarcity_100',preyRefugeWidth:0,predatorCatchChance:1,predatorScarcityThreshold:100},
+ {name:'scarcity_75_catch08',preyRefugeWidth:0,predatorCatchChance:.8,predatorScarcityThreshold:75},
 ] as const;
-const HORIZON=100000;
+const HORIZON=40000;
 
 describe('004 ecological structural screening: spatial refuge',()=>{
  it('compares 003 baseline against two prey refuges on identical seeds',async()=>{
   for(const c of CASES){
    const outcomes=[];
    for(const seed of SEEDS){
-    const w=new World(seed,{...common,preyRefugeWidth:c.preyRefugeWidth,predatorCatchChance:c.predatorCatchChance});
+    const w=new World(seed,{...common,preyRefugeWidth:c.preyRefugeWidth,predatorCatchChance:c.predatorCatchChance,predatorScarcityThreshold:c.predatorScarcityThreshold});
     let firstGrazerExtinction:number|null=null,firstPredatorExtinction:number|null=null;
     let coexistAt20000=0,coexistAt40000=0,coexistAt100000=0,minGrazersLastQuarter=Infinity,maxPredators=0;
     for(let t=1;t<=HORIZON;t++){
@@ -41,7 +43,7 @@ describe('004 ecological structural screening: spatial refuge',()=>{
     expect(w.stats().population).toBe(32+w.births-w.deaths);
    }
    console.log('ECOLOGY_004_SCREEN '+JSON.stringify({
-    case:c.name,refugeWidth:c.preyRefugeWidth,catchChance:c.predatorCatchChance,
+    case:c.name,refugeWidth:c.preyRefugeWidth,catchChance:c.predatorCatchChance,scarcityThreshold:c.predatorScarcityThreshold,
     horizon:HORIZON,seeds:SEEDS.length,
     coexistAt20000:outcomes.reduce((a,b)=>a+b.coexistAt20000,0),
     coexistAt40000:outcomes.reduce((a,b)=>a+b.coexistAt40000,0),
