@@ -12,7 +12,9 @@ const config={
 
 describe('004 investigation: Experiment 003 seed-303 retrospective',()=>{
  it('replays the published engine and records extinction and precursors',async()=>{
-   const w=new World(303,config);
+   const w=new World(303,config).enableDiagnostics();
+   let countsAt28000:typeof w.diagnostics=null;
+   let grazerEnergyAt28000:number|null=null;
    const samples:Array<{tick:number;predators:number;grazers:number;food:number;births:number;deaths:number;generation:number}>=[];
    let extinctPredators:number|null=null;
    let extinctGrazers:number|null=null;
@@ -21,6 +23,7 @@ describe('004 investigation: Experiment 003 seed-303 retrospective',()=>{
    for(let tick=1;tick<=40000;tick++){
      w.step();
      const s=w.stats();
+     if(tick===28000){countsAt28000={...w.diagnostics!};grazerEnergyAt28000=s.grazers? w.organisms.filter(o=>o.species==='grazer').reduce((n,o)=>n+o.energy,0)/s.grazers:null;}
      foodPeak=Math.max(foodPeak,s.food);
      maxPredators=Math.max(maxPredators,s.predators);
      maxGrazers=Math.max(maxGrazers,s.grazers);
@@ -40,11 +43,15 @@ describe('004 investigation: Experiment 003 seed-303 retrospective',()=>{
      .map(a=>({born:a.bornTick,died:a.diedTick,generation:a.generation}));
    console.log('EXPERIMENT_003_REPLAY '+JSON.stringify({
      seed:303,config,extinctPredators,extinctGrazers,extinctWorld,
+     deathCauses:w.diagnostics,deathCausesSince28000:Object.fromEntries(Object.entries(w.diagnostics!).map(([key,n])=>[key,n-(countsAt28000?.[key as keyof typeof countsAt28000]??0)])),grazerEnergyAt28000,
      foodPeak,maxPredators,maxGrazers,final:w.stats(),samples,
      lastPredatorDeaths:deathsBySpecies('predator'),
      lastGrazerDeaths:deathsBySpecies('grazer')
    }));
    expect(w.stats().population).toBe(32+w.births-w.deaths);
    expect(w.seed).toBe(303);
+   expect(extinctGrazers).toBe(29619);
+   expect(extinctPredators).toBe(30317);
+   expect(w.diagnostics!.predation+w.diagnostics!.starvation+w.diagnostics!.age).toBe(w.deaths);
  },120000);
 });
