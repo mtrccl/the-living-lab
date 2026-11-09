@@ -15,7 +15,7 @@ async function freePort(){
 }
 async function start(path,port){
  const child=spawn(process.execPath,['runner/runner.mjs'],{
-  env:{...process.env,GENESIS_CHECKPOINT:path,GENESIS_PORT:String(port),GENESIS_TICK_MS:'20',GENESIS_SAVE_MS:'1000'},
+  env:{...process.env,GENESIS_CHECKPOINT:path,GENESIS_PORT:String(port),GENESIS_TICK_MS:'20',GENESIS_SAVE_MS:'1000',GENESIS_ALLOW_NEW_WORLD:'1'},
   stdio:['ignore','pipe','pipe']
  });
  let output='';
@@ -51,6 +51,8 @@ test('runner saves and resumes the same ecosystem; corrupt checkpoints fail clos
   await new Promise(resolve=>setTimeout(resolve,200));
   const before=await (await fetch('http://127.0.0.1:'+port+'/state')).json();
   assert.ok(before.world.tick>0);
+  assert.equal(Object.hasOwn(before.world,'lineage'),false,'telemetry excludes genealogy');
+  assert.equal(JSON.parse(await readFile(path,'utf8')).world.seed,42,'first boot checkpoint exists before API serves');
   await stop(child);child=undefined;
   const saved=JSON.parse(await readFile(path,'utf8'));
   assert.ok(saved.world.tick>=before.world.tick);
@@ -60,7 +62,7 @@ test('runner saves and resumes the same ecosystem; corrupt checkpoints fail clos
   const resumed=await (await fetch('http://127.0.0.1:'+port+'/state')).json();
   assert.ok(resumed.world.tick>=saved.world.tick);
   assert.equal(resumed.world.seed,saved.world.seed);
-  assert.ok(resumed.world.lineage.length>=saved.world.lineage.length);
+  assert.equal(Object.hasOwn(resumed.world,'lineage'),false);
   await stop(child);child=undefined;
   await copyFile(path,path+'.bak');
   await writeFile(path,'{bad json');
@@ -91,4 +93,44 @@ test('runner saves and resumes the same ecosystem; corrupt checkpoints fail clos
   if(child&&child.exitCode===null)child.kill('SIGKILL');
   await rm(dir,{recursive:true,force:true});
  }
+});
+
+test('missing checkpoint after initialization refuses to reset even with first-boot permission',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'genesis-failclosed-'));
+ const path=join(dir,'world.json');
+ let child;
+ try{
+  const port=await freePort();
+  child=await start(path,port);
+  await stop(child);child=undefined;
+  await rm(path);
+  const proc=spawn(process.execPath,['runner/runner.mjs'],{
+   env:{...process.env,GENESIS_CHECKPOINT:path,GENESIS_PORT:String(port),GENESIS_ALLOW_NEW_WORLD:'1'},
+   stdio:'ignore'
+  });
+  const code=await Promise.race([
+   new Promise(resolve=>proc.once('exit',resolve)),
+   new Promise((_,reject)=>setTimeout(()=>reject(Error('Missing primary checkpoint did not fail closed')),5000))
+  ]);
+  assert.notEqual(code,0);
+  await assert.rejects(readFile(path,'utf8'),{code:'ENOENT'});
+ }finally{if(child&&child.exitCode===null)child.kill('SIGKILL');await rm(dir,{recursive:true,force:true});}
+});
+
+test('fresh world refuses implicit creation without explicit opt-in',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'genesis-noautoboot-'));
+ const path=join(dir,'world.json');
+ try{
+  const port=await freePort();
+  const proc=spawn(process.execPath,['runner/runner.mjs'],{
+   env:{...process.env,GENESIS_CHECKPOINT:path,GENESIS_PORT:String(port),GENESIS_ALLOW_NEW_WORLD:'0'},
+   stdio:'ignore'
+  });
+  const code=await Promise.race([
+   new Promise(resolve=>proc.once('exit',resolve)),
+   new Promise((_,reject)=>setTimeout(()=>reject(Error('Implicit boot did not fail closed')),5000))
+  ]);
+  assert.notEqual(code,0);
+  await assert.rejects(readFile(path,'utf8'),{code:'ENOENT'});
+ }finally{await rm(dir,{recursive:true,force:true});}
 });
