@@ -11,6 +11,9 @@ describe('Experiment 003 deployment preparation',()=>{
  it('validates Experiment 004 startup shell syntax',()=>{
   expect(()=>execFileSync('bash',['-n','ops/start-experiment-004.sh'])).not.toThrow();
  });
+ it('syntax-checks the stopped-only Genesis safety installer',()=>{
+  expect(()=>execFileSync('bash',['-n','ops/install-genesis-safety.sh'])).not.toThrow();
+ });
  it('validates closing script syntax',()=>{
   expect(()=>execFileSync('bash',['-n','ops/close-experiment-003.sh'])).not.toThrow();
  });
