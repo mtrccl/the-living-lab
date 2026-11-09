@@ -7,13 +7,14 @@ import {World,createCheckpoint,restoreCheckpoint} from './world-engine.mjs';
 const checkpointPath=resolve(process.env.GENESIS_CHECKPOINT??'./data/world.json');
 const port=Number(process.env.GENESIS_PORT??8095);
 const tickMs=Number(process.env.GENESIS_TICK_MS??100);
-const saveMs=Number(process.env.GENESIS_SAVE_MS??86400000);
+const saveMs=Number(process.env.GENESIS_SAVE_MS??60000);
 if(!Number.isSafeInteger(port)||port<1||port>65535||!Number.isSafeInteger(tickMs)||tickMs<20||tickMs>60000||!Number.isSafeInteger(saveMs)||saveMs<1000||saveMs>86400000)throw Error('Invalid runner configuration');
 const maxBytes=16*1024*1024;
 const recovery=process.env.GENESIS_RECOVER_BACKUP==='1';
 async function load(path){const metadata=await stat(path);if(metadata.size>maxBytes)throw Error('Checkpoint exceeds size limit');return restoreCheckpoint(JSON.parse(await readFile(path,'utf8')));}
 
-let world;
+const initializedMarker=checkpointPath+'.initialized';
+let world,firstBoot=false;
 try{
  world=await load(checkpointPath);
  console.log('Resumed world at tick',world.tick);
@@ -25,6 +26,10 @@ try{
   // Missing primary with a surviving backup is not a new installation.
   try{await stat(checkpointPath+'.bak');throw Error('Primary checkpoint missing; backup exists. Set GENESIS_RECOVER_BACKUP=1 for explicit recovery.');}
   catch(backupError){if(backupError?.code!=='ENOENT')throw backupError;}
+  // A missing checkpoint must NEVER silently create a new world after a crash.
+  try{await stat(initializedMarker);throw Error('Previously initialized world has no checkpoint: refusing reset.');}
+  catch(markerError){if(markerError?.code!=='ENOENT')throw markerError;}
+  if(process.env.GENESIS_ALLOW_NEW_WORLD!=='1')throw Error('No checkpoint; explicit GENESIS_ALLOW_NEW_WORLD=1 required for first boot');
   const seed=Number(process.env.GENESIS_SEED??42);
   if(!Number.isSafeInteger(seed)||seed<0||seed>4294967295)throw Error('Invalid Genesis seed');
   let config={};
@@ -39,7 +44,8 @@ try{
    config=parsed;
   }
   world=new World(seed,config);
-  console.log('Created new world with configured environment');
+  firstBoot=true;
+  console.log('Initialized new world; checkpoint required before serving');
  }
 }
 await mkdir(dirname(checkpointPath),{recursive:true});
@@ -58,11 +64,16 @@ async function save(){
  const dir=await open(dirname(checkpointPath),'r');try{await dir.sync();}finally{await dir.close();}
 }
 function queueSave(){saving=saving.then(save);saving.catch(error=>{console.error('Checkpoint failed:',error);failed=true;process.exitCode=1;void shutdown();});return saving;}
+// First-ever world is durably saved before the first tick or API request.
+if(firstBoot)await save();
+// Older checkpoints are also marked as initialized on their first resumed boot.
+try{const {writeFile}=await import('node:fs/promises');await writeFile(initializedMarker,'initialized\n',{flag:'wx',mode:0o600});}
+catch(error){if(error?.code!=='EEXIST')throw error;}
 const server=createServer((req,res)=>{
  if(req.method!=='GET'||(req.url!=='/health'&&req.url!=='/state')){res.writeHead(404);res.end();return;}
  res.setHeader('Content-Type','application/json');
  res.setHeader('Cache-Control','no-store');
- const body=req.url==='/health'?{ok:!stopping,tick:world.tick}:{stats:world.stats(),world:world.snapshot()};
+ const body=req.url==='/health'?{ok:!stopping,tick:world.tick}:(()=>{const state=world.snapshot();delete state.lineage;return{stats:world.stats(),world:state};})();
  const payload=JSON.stringify(body);
  if(Buffer.byteLength(payload)>maxBytes){res.writeHead(503);res.end(JSON.stringify({error:'State too large'}));return;}
  res.end(payload);
