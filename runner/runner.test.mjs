@@ -57,7 +57,7 @@ test('runner saves and resumes the same ecosystem; corrupt checkpoints fail clos
   const saved=JSON.parse(await readFile(path,'utf8'));
   assert.ok(saved.world.tick>=before.world.tick);
   assert.equal(saved.world.seed,before.world.seed);
-  assert.ok(saved.world.lineage.length>=before.world.lineage.length);
+  assert.ok(saved.world.lineage.length>=32,'checkpoint retains genealogy even though API omits it');
   child=await start(path,port);
   const resumed=await (await fetch('http://127.0.0.1:'+port+'/state')).json();
   assert.ok(resumed.world.tick>=saved.world.tick);
