@@ -65,7 +65,10 @@ async function save(){
 }
 function queueSave(){saving=saving.then(save);saving.catch(error=>{console.error('Checkpoint failed:',error);failed=true;process.exitCode=1;void shutdown();});return saving;}
 // First-ever world is durably saved before the first tick or API request.
-if(firstBoot){await save();const {writeFile}=await import('node:fs/promises');await writeFile(initializedMarker,'initialized\n',{flag:'wx',mode:0o600});}
+if(firstBoot)await save();
+// Older checkpoints are also marked as initialized on their first resumed boot.
+try{const {writeFile}=await import('node:fs/promises');await writeFile(initializedMarker,'initialized\n',{flag:'wx',mode:0o600});}
+catch(error){if(error?.code!=='EEXIST')throw error;}
 const server=createServer((req,res)=>{
  if(req.method!=='GET'||(req.url!=='/health'&&req.url!=='/state')){res.writeHead(404);res.end();return;}
  res.setHeader('Content-Type','application/json');
